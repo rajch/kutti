@@ -1,0 +1,204 @@
+# This file deploys an external volume provisioner, with the identifier
+#    rajware.net/kutti-local-provisioner
+#
+# The following API objects will be created:
+#    - clusterroles/kutti-persistent-volume-binder
+#    - serviceaccounts/kutti-provisioner in the kube-system namespace
+#    - clusterrolebindings/kutti-provisioner-pv-binder
+#    - deployments/kutti-local-provisioner in the kube-system namespace
+#
+# The ClusterRole is needed for the permissions required by
+#    sigs.k8s.io/sig-storage-lib-external-provisioner/controller
+#
+# A sample StorageClass and PersistentVolumeClaim is provided in comments
+#     at the bottom of this file. 
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: kutti-persistent-volume-binder
+  labels:
+    app.kubernetes.io/name: kutti-local-provisioner
+    app.kubernetes.io/part-of: kutti
+rules:
+  - apiGroups:
+    - ""
+    resources:
+    - persistentvolumes
+    verbs:
+    - create
+    - delete
+    - get
+    - list
+    - update
+    - watch
+  - apiGroups:
+    - ""
+    resources:
+    - persistentvolumes/status
+    verbs:
+    - update
+  - apiGroups:
+    - ""
+    resources:
+    - persistentvolumeclaims
+    verbs:
+    - get
+    - list
+    - update
+    - watch
+  - apiGroups:
+    - ""
+    resources:
+    - persistentvolumeclaims/status
+    verbs:
+    - update
+  - apiGroups:
+    - ""
+    resources:
+    - pods
+    verbs:
+    - create
+    - delete
+    - get
+    - list
+    - watch
+  - apiGroups:
+    - storage.k8s.io
+    resources:
+    - storageclasses
+    verbs:
+    - get
+    - list
+    - watch
+  - apiGroups:
+    - ""
+    resources:
+    - endpoints
+    - services
+    verbs:
+    - create
+    - delete
+    - get
+    - update
+    - list
+    - watch
+  - apiGroups:
+    - ""
+    resources:
+    - secrets
+    verbs:
+    - get
+  - apiGroups:
+    - ""
+    resources:
+    - nodes
+    verbs:
+    - get
+    - list
+  - apiGroups:
+    - ""
+    resources:
+    - events
+    verbs:
+    - watch
+  - apiGroups:
+    - ""
+    resources:
+    - events
+    verbs:
+    - create
+    - patch
+    - update
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: kutti-provisioner
+  namespace: kube-system
+  labels:
+    app.kubernetes.io/name: kutti-local-provisioner
+    app.kubernetes.io/part-of: kutti
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: kutti-provisioner-pv-binder
+  labels:
+    app.kubernetes.io/name: kutti-local-provisioner
+    app.kubernetes.io/part-of: kutti
+subjects:
+  - kind: ServiceAccount
+    namespace: kube-system
+    name: kutti-provisioner
+    apiGroup: ""
+roleRef:
+  kind: ClusterRole
+  name: kutti-persistent-volume-binder
+  apiGroup: rbac.authorization.k8s.io
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: kutti-local-provisioner
+  namespace: kube-system
+  labels:
+    app.kubernetes.io/name: kutti-local-provisioner
+    app.kubernetes.io/part-of: kutti
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      rajware.net/project: kutti
+      rajware.net/component: kutti-local-provisioner
+  template:
+    metadata:
+      labels:
+        rajware.net/project: kutti
+        rajware.net/component: kutti-local-provisioner
+    spec:
+      serviceAccount: kutti-provisioner
+      containers:
+        - name: provisioner
+          image: rajchaudhuri/kutti-localprovisioner:0.1.12
+          volumeMounts:
+            - mountPath: /kutti/vols
+              name: kuttivolsroot
+          env:
+            - name: KUTTI_NODE_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: spec.nodeName
+            - name: KUTTI_ROOT_PATH
+              value: /kutti/vols
+      volumes:
+        - name: kuttivolsroot
+          hostPath:
+            path: /data/kuttivolsroot
+            type: DirectoryOrCreate
+---
+# Sample StorageClass
+#    Remove the is-default-class annotation if required
+# ---
+# apiVersion: storage.k8s.io/v1
+# kind: StorageClass
+# metadata:
+#   name: kutti-sc
+#   annotations:
+#     storageclass.kubernetes.io/is-default-class: "true"
+# provisioner: rajware.net/kutti-local-provisioner
+# reclaimPolicy: Delete
+# ---
+# Sample PersistentVolumeClaim
+# ---
+# apiVersion: v1
+# kind: PersistentVolumeClaim
+# metadata:
+#   name: kutti-pvc
+# spec:
+#   resources:
+#     requests:
+#       storage: 2Gi
+#   accessModes:
+#     - ReadWriteOnce
+#   storageClassName: kutti-sc
+# ---
