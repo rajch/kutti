@@ -10,7 +10,7 @@ REGISTRY_USER ?= rajchaudhuri
 all: localprovisioner localprovisioner-image
 
 out/kutti-localprovisioner: cmd/kutti-localprovisioner/main.go
-	go build -o out/kutti-localprovisioner cmd/kutti-localprovisioner/main.go
+	CGO_ENABLED=0 go build -o out/kutti-localprovisioner cmd/kutti-localprovisioner/main.go
 
 
 .PHONY: localprovisioner
