@@ -3,7 +3,9 @@ package vboxdriver
 import (
 	"errors"
 	"fmt"
+	"os"
 	"os/exec"
+	"path"
 	"strings"
 
 	"github.com/rajch/kutti/pkg/core"
@@ -11,7 +13,7 @@ import (
 
 var (
 	// DefaultNetCIDR is the address range used by virtual networks
-	DefaultNetCIDR = "10.0.2.0/24"
+	DefaultNetCIDR = "10.0.3.0/24"
 )
 
 // VBoxVMDriver implements the VMDriver interface for VirtualBox
@@ -94,9 +96,14 @@ func (vd *VBoxVMDriver) ListNetworks() ([]core.VMNetwork, error) {
 	return result, nil
 }
 
-// CreateNetwork creates a network
+/*CreateNetwork creates a new VirtualBox NAT network.
+  It uses the CIDR common to all Kutti networks, and is dhcp-enabled at start.
+*/
 func (vd *VBoxVMDriver) CreateNetwork(netname string) (result core.VMNetwork, err error) {
 	// Multiple VirtualBox NAT Networks can have the same IP range
+	// So, all Kutti networks will use the same network CIDR
+	// We start with dhcp enabled.
+	// TODO: Consider manually creating the associated DHCP server
 	_, err = runwithresults(vd.vboxmanagepath,
 		"natnetwork",
 		"add",
@@ -104,6 +111,9 @@ func (vd *VBoxVMDriver) CreateNetwork(netname string) (result core.VMNetwork, er
 		netname,
 		"--network",
 		DefaultNetCIDR,
+		"--enable",
+		"--dhcp",
+		"on",
 	)
 	if err != nil {
 		return
@@ -125,6 +135,81 @@ func (vd *VBoxVMDriver) DeleteNetwork(netname string) error {
 	)
 
 	return err
+}
+
+// CreateNode creates a node, and connects it to a previously created NAT network.
+func (vd *VBoxVMDriver) CreateNode(nodename string, networkname string) error {
+	/*
+		We need to run the following two VBoxManage commands, in order:
+
+		- VBoxManage import <nodeimageovafile> --vsys 0 --vmname "<nodename>"
+		- VBoxManage modifyvm "<nodename>" --nic1 natnetwork --nat-network1 <networkname>
+
+		The first imports from an .ova file (easiest way to get fully configured VM), while
+		setting the VM name. The second connects the first network interface card to
+		the NAT network.
+	*/
+
+	cachedir, err := core.CacheDir()
+	if err != nil {
+		return fmt.Errorf("Could not retrieve CacheDir: %v", err)
+	}
+
+	ovafile := path.Join(cachedir, "Krishna-1.0.ova")
+	if _, err = os.Stat(ovafile); err != nil {
+		return fmt.Errorf("Could not retrieve ovafile %s: %v", ovafile, err)
+	}
+
+	_, err = runwithresults(
+		vd.vboxmanagepath,
+		"import",
+		ovafile,
+		"--vsys",
+		"0",
+		"--vmname",
+		nodename,
+	)
+
+	if err != nil {
+		return fmt.Errorf("Could not import ovafile %s: %v", ovafile, err)
+	}
+
+	_, err = runwithresults(
+		vd.vboxmanagepath,
+		"modifyvm",
+		nodename,
+		"--nic1",
+		"natnetwork",
+		"--nat-network1",
+		networkname,
+	)
+
+	if err != nil {
+		return fmt.Errorf("Could not attach node %s to network %s: %v", nodename, networkname, err)
+	}
+
+	return nil
+}
+
+// DeleteNode creates a node, and connects it to a previously created NAT network.
+func (vd *VBoxVMDriver) DeleteNode(nodename string) error {
+	/*
+		We need to run:
+
+		- VBoxManage unregistervm "<nodename>" --delete
+	*/
+	_, err := runwithresults(
+		vd.vboxmanagepath,
+		"unregistervm",
+		nodename,
+		"--delete",
+	)
+
+	if err != nil {
+		return fmt.Errorf("Could not delete node %s: %v", nodename, err)
+	}
+
+	return nil
 }
 
 // New returns a pointer to a new VBoxVMDriver OR an error
@@ -160,7 +245,7 @@ func findvboxmanage() (path string, err error) {
 		return
 	}
 
-	// Then try looking in well-known places
+	// TODO: Then try looking in well-known places
 
 	// Give up
 	return

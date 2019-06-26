@@ -70,12 +70,13 @@ func TestListNetworks(t *testing.T) {
 	}
 }
 
-func TestCreateNetwork(t *testing.T) {
+func TestNetworkOperations(t *testing.T) {
+	t.Log("Creating New VBoxDriver...")
+
 	drv, err := New()
 	if err != nil {
 		t.Logf("Error in New: %v\n", err)
-		t.Fail()
-		return
+		t.FailNow()
 	}
 
 	t.Log("Testing CreateNetwork...")
@@ -83,33 +84,49 @@ func TestCreateNetwork(t *testing.T) {
 	nw, err := drv.CreateNetwork("zintakova")
 	if err != nil {
 		t.Logf("Error in CreateNetwork: %v\n", err)
-		t.Fail()
-		return
+		t.FailNow()
 	}
 
 	if nw.Name != "zintakova" {
 		t.Logf("Wrong name returned. Wanted zintakova, got %v.\n", nw.Name)
-		t.Fail()
-		return
+		t.FailNow()
 	}
 
 	t.Log("CreateNetwork worked as expected. Calling again with same parameters...")
 	nw, err = drv.CreateNetwork("zintakova")
 	if err == nil {
 		t.Log("The second call to CreateNetwork should have failed.")
-		t.Fail()
-		return
+		t.FailNow()
 	}
 
-	t.Log("Second call errored as expected. Calling TestListNetworks...")
-	t.Run("ListAfterCreate", TestListNetworks)
+	t.Logf("Second call errored as expected, with %v. Calling TestListNetworks...", err)
+	t.Log("Testing ListNetworks...")
 
-	t.Log("Hopefully that worked. Now calling DeleteNetwork...")
+	_, err = drv.ListNetworks()
+	if err != nil {
+		t.Logf("Error in ListNetworks: %v\n", err)
+		t.FailNow()
+	}
+
+	t.Log("ListNetwork seems to have worked. Now calling CreateNode...")
+	err = drv.CreateNode("champu", "zintakova")
+	if err != nil {
+		t.Logf("Error from CreateNode: %v\n", err)
+		t.FailNow()
+	}
+
+	t.Log("CreateNode seems to have worked. Now calling DeleteNode...")
+	err = drv.DeleteNode("champu")
+	if err != nil {
+		t.Logf("Error from DeleteNode: %v\n", err)
+		t.FailNow()
+	}
+
+	t.Log("DeleteNode seems to have worked. Now calling DeleteNetwork...")
 	err = drv.DeleteNetwork("zintakova")
 	if err != nil {
 		t.Logf("Error from DeleteNetwork: %v\n", err)
-		t.Fail()
-		return
+		t.FailNow()
 	}
 
 }
