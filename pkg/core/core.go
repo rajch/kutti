@@ -9,25 +9,34 @@ import (
 type VMDriver interface {
 	ListNetworks() ([]VMNetwork, error)
 	CreateNetwork(netname string) (VMNetwork, error)
+	GetNetwork(netname string) (VMNetwork, error)
 	DeleteNetwork(netname string) error
 
-	FetchMasterNodeImage() error
-	FetchWorkerNodeImage() error
+	/*
+		FetchMasterNodeImage() error
+		FetchWorkerNodeImage() error
+	*/
+	ListHosts() ([]VMHost, error)
+	CreateHost(hostname string, networkname string, position int) (VMHost, error)
+	GetHost(hostname string) (VMHost, error)
+	DeleteHost(hostname string) error
 
-	ListNodes() error
-	CreateNode(nodename string) error
-	DeleteNode(nodename string) error
+	GetSSHAddressForNode(nodepostion int) string
 }
 
 // VMNetwork describes a virtual network
-type VMNetwork struct {
-	Name    string
-	NetCIDR string
+type VMNetwork interface {
+	Name() string
+	NetCIDR() string
 }
 
-// Cluster defines a kutti Kubernetes cluster
-type Cluster struct {
-	Network VMNetwork
+// VMHost describes a node
+type VMHost interface {
+	Name() string
+	Status() string
+
+	Start() error
+	Stop() error
 }
 
 // CacheDir returns the location where the kutti cache should reside

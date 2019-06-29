@@ -70,6 +70,27 @@ func TestListNetworks(t *testing.T) {
 	}
 }
 
+func TestListHosts(t *testing.T) {
+	drv, err := New()
+	if err != nil {
+		t.Logf("Error occured: %v\n", err)
+		t.Fail()
+		return
+	}
+
+	t.Log("Testing ListHosts...")
+
+	hosts, err := drv.ListHosts()
+	if err != nil {
+		t.Logf("Error in ListHots: %v\n", err)
+		t.Fail()
+	}
+
+	for _, host := range hosts {
+		t.Log(host.Name() + "," + host.Status())
+	}
+}
+
 func TestNetworkOperations(t *testing.T) {
 	t.Log("Creating New VBoxDriver...")
 
@@ -87,8 +108,8 @@ func TestNetworkOperations(t *testing.T) {
 		t.FailNow()
 	}
 
-	if nw.Name != "zintakova" {
-		t.Logf("Wrong name returned. Wanted zintakova, got %v.\n", nw.Name)
+	if nw.Name() != "zintakova" {
+		t.Logf("Wrong name returned. Wanted zintakova, got %v.\n", nw.Name())
 		t.FailNow()
 	}
 
@@ -108,25 +129,29 @@ func TestNetworkOperations(t *testing.T) {
 		t.FailNow()
 	}
 
-	t.Log("ListNetwork seems to have worked. Now calling CreateNode...")
-	err = drv.CreateNode("champu", "zintakova")
+	t.Log("ListNetwork seems to have worked. Now calling CreateHost...")
+	newnode, err := drv.CreateHost("champu", "zintakova", 0)
 	if err != nil {
-		t.Logf("Error from CreateNode: %v\n", err)
+		t.Logf("Error from CreateHost: %v\n", err)
 		t.FailNow()
 	}
 
-	t.Log("CreateNode seems to have worked. Now calling DeleteNode...")
-	err = drv.DeleteNode("champu")
-	if err != nil {
-		t.Logf("Error from DeleteNode: %v\n", err)
-		t.FailNow()
-	}
+	t.Log(newnode)
 
-	t.Log("DeleteNode seems to have worked. Now calling DeleteNetwork...")
-	err = drv.DeleteNetwork("zintakova")
-	if err != nil {
-		t.Logf("Error from DeleteNetwork: %v\n", err)
-		t.FailNow()
-	}
+	/*
+		t.Logf("CreateNode seems to have created node with name %s and status %s. Now calling DeleteHost...", newnode.Name(), newnode.Status())
+		err = drv.DeleteHost("champu")
+		if err != nil {
+			t.Logf("Error from DeleteHost: %v\n", err)
+			t.FailNow()
+		}
+
+		t.Log("DeleteNode seems to have worked. Now calling DeleteNetwork...")
+		err = drv.DeleteNetwork("zintakova")
+		if err != nil {
+			t.Logf("Error from DeleteNetwork: %v\n", err)
+			t.FailNow()
+		}
+	*/
 
 }
