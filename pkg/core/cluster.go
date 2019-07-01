@@ -84,7 +84,7 @@ func (c *kuttiCluster) addnode(nodename string) error {
 }
 
 func (c *kuttiCluster) getnode(nodename string, position int) error {
-	newnode, err := c.driver.GetHost(nodename)
+	newnode, err := c.driver.GetHost(nodename, c.networkname())
 	if err != nil {
 		return err
 	}

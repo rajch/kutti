@@ -108,7 +108,7 @@ func (vd *VBoxVMDriver) CreateNetwork(netname string) (core.VMNetwork, error) {
 	// Multiple VirtualBox NAT Networks can have the same IP range
 	// So, all Kutti networks will use the same network CIDR
 	// We start with dhcp enabled.
-	results, err := runwithresults(vd.vboxmanagepath,
+	output, err := runwithresults(vd.vboxmanagepath,
 		"natnetwork",
 		"add",
 		"--netname",
@@ -120,12 +120,12 @@ func (vd *VBoxVMDriver) CreateNetwork(netname string) (core.VMNetwork, error) {
 		"on",
 	)
 	if err != nil {
-		return nil, fmt.Errorf("Could not create NAT network %s. Error was: %v, Output was: %v", netname, err, results)
+		return nil, fmt.Errorf("Could not create NAT network %s:%v:%s", netname, err, output)
 	}
 
 	// Manually create the associated DHCP server
 	// Hard-coding a thirty-node limit for now
-	results, err = runwithresults(
+	output, err = runwithresults(
 		vd.vboxmanagepath,
 		"dhcpserver",
 		"add",
@@ -142,7 +142,7 @@ func (vd *VBoxVMDriver) CreateNetwork(netname string) (core.VMNetwork, error) {
 		"--enable",
 	)
 	if err != nil {
-		return nil, fmt.Errorf("Could not create DHCP server for network %s. Error was: %v, Output was: %v", netname, err, results)
+		return nil, fmt.Errorf("Could not create DHCP server for network %s:%v:%s", netname, err, output)
 	}
 
 	newnetwork := &VBoxVMNetwork{name: netname, netCIDR: DefaultNetCIDR}
@@ -168,14 +168,28 @@ func (vd *VBoxVMDriver) GetNetwork(netname string) (core.VMNetwork, error) {
 
 // DeleteNetwork deletes a network
 func (vd *VBoxVMDriver) DeleteNetwork(netname string) error {
-	_, err := runwithresults(vd.vboxmanagepath,
+	output, err := runwithresults(vd.vboxmanagepath,
 		"natnetwork",
 		"remove",
 		"--netname",
 		netname,
 	)
+	if err != nil {
+		return fmt.Errorf("Could not delete NAT network %s:%v:%s", netname, err, output)
+	}
 
-	return err
+	output, err = runwithresults(
+		vd.vboxmanagepath,
+		"dhcpserver",
+		"remove",
+		"--netname",
+		netname,
+	)
+	if err != nil {
+		return fmt.Errorf("Could not delete DHCP server %s:%v:%s", netname, err, output)
+	}
+
+	return nil
 }
 
 /*ListHosts parses the list of VMs returned by
@@ -282,49 +296,58 @@ func (vd *VBoxVMDriver) CreateHost(hostname string, networkname string, position
 	}
 	newhost.status = "NetworkAttached"
 
-	// Start the host
-	err = newhost.Start()
-	if err != nil {
-		return newhost, err
-	}
-	newhost.status = "Started"
+	/*
+		// Start the host
+		err = newhost.Start()
+		if err != nil {
+			return newhost, err
+		}
+		newhost.status = "Started"
 
-	// Forward the SSH port
-	err = newhost.forwardSSHPort(10000 + position)
-	if err != nil {
-		return newhost, err
-	}
+		// Forward the SSH port
+		err = newhost.ForwardSSHPort(10000 + position)
+		if err != nil {
+			return newhost, err
+		}
+	*/
 	newhost.status = "Ready"
 
 	return newhost, nil
 }
 
 // GetHost returns the named host, or an error.
-func (vd *VBoxVMDriver) GetHost(hostname string) (core.VMHost, error) {
-	hosts, err := vd.ListHosts()
+func (vd *VBoxVMDriver) GetHost(hostname string, networkname string) (core.VMHost, error) {
+	output, err := runwithresults(
+		vd.vboxmanagepath,
+		"guestproperty",
+		"enumerate",
+		hostname,
+		"--patterns",
+		"/VirtualBox/GuestInfo/Net/0/*",
+	)
+
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("Host %s not found", hostname)
 	}
 
-	for _, host := range hosts {
-		if host.Name() == hostname {
-			return host, nil
-		}
+	foundhost := &VBoxVMHost{driver: vd, name: hostname, netname: networkname, status: "Fetched"}
+
+	if output != "" {
+		// Parse output
+		foundhost.status = "Ready"
 	}
 
-	return nil, fmt.Errorf("Host %s not found", hostname)
+	return foundhost, nil
 }
 
 // DeleteHost deletes a VM.
-func (vd *VBoxVMDriver) DeleteHost(hostname string) error {
-	// TODO: remove SSH forwarding
-
+func (vd *VBoxVMDriver) DeleteHost(hostname string, networkname string) error {
 	/*
 		We need to run:
 
 		- VBoxManage unregistervm "<nodename>" --delete
 	*/
-	_, err := runwithresults(
+	output, err := runwithresults(
 		vd.vboxmanagepath,
 		"unregistervm",
 		hostname,
@@ -332,15 +355,10 @@ func (vd *VBoxVMDriver) DeleteHost(hostname string) error {
 	)
 
 	if err != nil {
-		return fmt.Errorf("Could not delete node %s: %v", hostname, err)
+		return fmt.Errorf("Could not delete host %s: %v:%s", hostname, err, output)
 	}
 
 	return nil
-}
-
-// GetSSHAddressForNode returns the address needed to SSH to a node
-func (vd *VBoxVMDriver) GetSSHAddressForNode(position int) string {
-	return fmt.Sprintf("localhost:%d", forwardedPortBase+position)
 }
 
 // New returns a pointer to a new VBoxVMDriver OR an error

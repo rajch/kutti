@@ -3,6 +3,7 @@ package vboxdriver
 import (
 	"os"
 	"testing"
+	"time"
 )
 
 func TestRunWithResults(t *testing.T) {
@@ -134,24 +135,57 @@ func TestNetworkOperations(t *testing.T) {
 	if err != nil {
 		t.Logf("Error from CreateHost: %v\n", err)
 		t.FailNow()
+	} else {
+
+		t.Log(newnode)
+
+		t.Logf("CreateHost seems to have worked. Now starting the new host...")
+		err = newnode.Start()
+		if err != nil {
+			t.Logf("Host starting failed with error: %v", err)
+			t.Fail()
+		} else {
+
+			t.Logf("Host starting worked. Now waiting twenty seconds, and forwatrding SSH port...")
+			time.Sleep(20 * time.Second)
+			err = newnode.ForwardSSHPort(10001)
+			if err != nil {
+				t.Logf("SSH port forwarding failed with error: %v", err)
+				t.Fail()
+			}
+
+			sshaddr := newnode.SSHAddress()
+			if sshaddr != "localhost:10001" {
+				t.Logf("SSH port mapping does not appear to be successful. Value was %s", sshaddr)
+				t.Fail()
+			} else {
+				t.Log("SSH Port mapping successful.")
+			}
+
+		}
+
+		t.Log("Now stopping host...")
+		err = newnode.Stop()
+		if err != nil {
+			t.Logf("Error stopping host: %v", err)
+			t.Fail()
+		}
+
 	}
 
-	t.Log(newnode)
+	t.Logf("CreateNode seems to have created node with name %s and status %s. Now waiting 20 seconds and calling DeleteHost...", newnode.Name(), newnode.Status())
+	time.Sleep(20 * time.Second)
+	err = drv.DeleteHost("champu", "zintakova")
+	if err != nil {
+		t.Logf("Error from DeleteHost: %v\n", err)
+		t.FailNow()
+	}
 
-	/*
-		t.Logf("CreateNode seems to have created node with name %s and status %s. Now calling DeleteHost...", newnode.Name(), newnode.Status())
-		err = drv.DeleteHost("champu")
-		if err != nil {
-			t.Logf("Error from DeleteHost: %v\n", err)
-			t.FailNow()
-		}
-
-		t.Log("DeleteNode seems to have worked. Now calling DeleteNetwork...")
-		err = drv.DeleteNetwork("zintakova")
-		if err != nil {
-			t.Logf("Error from DeleteNetwork: %v\n", err)
-			t.FailNow()
-		}
-	*/
+	t.Log("DeleteNode seems to have worked. Now calling DeleteNetwork...")
+	err = drv.DeleteNetwork("zintakova")
+	if err != nil {
+		t.Logf("Error from DeleteNetwork: %v\n", err)
+		t.FailNow()
+	}
 
 }

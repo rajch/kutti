@@ -6,7 +6,8 @@ import (
 )
 
 const (
-	propSSHRule = "/kutti/VMInfo/SSHForwardingRule"
+	propSSHRule   = "/kutti/VMInfo/SSHForwardingRule"
+	propIPAddress = "/VirtualBox/GuestInfo/Net/0/V4/IP"
 )
 
 // VBoxVMHost implements the VMHost interface for VirtualBox
@@ -30,9 +31,21 @@ func (vh *VBoxVMHost) Status() string {
 	return vh.status
 }
 
+// SSHAddress returns the host address and port number to SSH into this host
+func (vh *VBoxVMHost) SSHAddress() string {
+	result := vh.sshRule()
+
+	ruleparts := strings.Split(result, ":")
+	if len(ruleparts) < 4 {
+		return ""
+	}
+
+	return fmt.Sprintf("localhost:%s", ruleparts[3])
+}
+
 // Start starts the VM
 func (vh *VBoxVMHost) Start() error {
-	_, err := runwithresults(
+	output, err := runwithresults(
 		vh.driver.vboxmanagepath,
 		"startvm",
 		vh.name,
@@ -41,7 +54,7 @@ func (vh *VBoxVMHost) Start() error {
 	)
 
 	if err != nil {
-		return fmt.Errorf("Could not start the host '%s': %v", vh.name, err)
+		return fmt.Errorf("Could not start the host '%s': %v. Output was %s", vh.name, err, output)
 	}
 
 	vh.status = "Running"
@@ -65,32 +78,8 @@ func (vh *VBoxVMHost) Stop() error {
 	return nil
 }
 
-func (vh *VBoxVMHost) ipAddress() string {
-	// This guestproperty is only available if the VM is
-	// running, and has the Virtual Machine additions enabled
-	result, _ := vh.getproperty("/VirtualBox/GuestInfo/Net/1/V4/IP")
-	return result
-}
-
-func (vh *VBoxVMHost) sshRule() string {
-	// This guestproperty is only available if the VM is
-	// running, and has the Virtual Machine additions enabled
-	result, _ := vh.getproperty("/kutti/VMInfo/SSHForwardingRule")
-	return result
-
-}
-func (vh *VBoxVMHost) forwardedPort() string {
-	result := vh.sshRule()
-
-	ruleparts := strings.Split(result, ":")
-	if len(ruleparts) < 4 {
-		return ""
-	}
-
-	return ruleparts[3]
-}
-
-func (vh *VBoxVMHost) forwardSSHPort(hostport int) error {
+// ForwardSSHPort forwards the SSH port of this host to the specified host port
+func (vh *VBoxVMHost) ForwardSSHPort(hostport int) error {
 	// Modify NAT Network port forwarding rules to allow SSH to new host
 	// SSH rule format is:
 	// <rule name>:<protocol>:[<host ip>]:<host port>:[<guest ip>]:<guest port>
@@ -122,11 +111,7 @@ func (vh *VBoxVMHost) forwardSSHPort(hostport int) error {
 		)
 	}
 
-	_, err = runwithresults(
-		vh.driver.vboxmanagepath,
-		"guestproperty",
-		"set",
-		vh.name,
+	err = vh.setproperty(
 		propSSHRule,
 		sshrule,
 	)
@@ -192,9 +177,47 @@ func (vh *VBoxVMHost) getproperty(propname string) (string, bool) {
 
 	// VBoxManage guestproperty gets the hardcoded value "No value set!"
 	// if the property value cannot be retrieved
-	if err != nil || output == "No value set!" {
+	if err != nil || output == "No value set!" || output == "No value set!\n" {
 		return "", false
 	}
 
-	return output, true
+	// Output is in the format
+	// Value: <value>
+	// So, 7th rune onwards
+	return output[7:], true
+}
+
+func (vh *VBoxVMHost) setproperty(propname string, value string) error {
+	_, err := runwithresults(
+		vh.driver.vboxmanagepath,
+		"guestproperty",
+		"set",
+		vh.name,
+		propname,
+		value,
+	)
+
+	if err != nil {
+		return fmt.Errorf(
+			"Could not set property %s for host %s: %v",
+			propname,
+			vh.name,
+			err,
+		)
+	}
+
+	return nil
+}
+
+func (vh *VBoxVMHost) ipAddress() string {
+	// This guestproperty is only available if the VM is
+	// running, and has the Virtual Machine additions enabled
+	result, _ := vh.getproperty(propIPAddress)
+	return result
+}
+
+func (vh *VBoxVMHost) sshRule() string {
+	result, _ := vh.getproperty(propSSHRule)
+	return result
+
 }

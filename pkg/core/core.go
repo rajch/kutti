@@ -18,8 +18,8 @@ type VMDriver interface {
 	*/
 	ListHosts() ([]VMHost, error)
 	CreateHost(hostname string, networkname string, position int) (VMHost, error)
-	GetHost(hostname string) (VMHost, error)
-	DeleteHost(hostname string) error
+	GetHost(hostname string, networkname string) (VMHost, error)
+	DeleteHost(hostname string, networkname string) error
 
 	GetSSHAddressForNode(nodepostion int) string
 }
@@ -34,9 +34,11 @@ type VMNetwork interface {
 type VMHost interface {
 	Name() string
 	Status() string
+	SSHAddress() string
 
 	Start() error
 	Stop() error
+	ForwardSSHPort(int) error
 }
 
 // CacheDir returns the location where the kutti cache should reside
