@@ -3,6 +3,7 @@ package vboxdriver
 import (
 	"fmt"
 	"strings"
+	"time"
 )
 
 const (
@@ -76,6 +77,11 @@ func (vh *VBoxVMHost) Stop() error {
 
 	vh.status = "Stopped"
 	return nil
+}
+
+// WaitForStateChange waits the specified number of seconds
+func (vh *VBoxVMHost) WaitForStateChange(timeoutinseconds int) {
+	time.Sleep(time.Duration(timeoutinseconds) * time.Second)
 }
 
 // ForwardSSHPort forwards the SSH port of this host to the specified host port

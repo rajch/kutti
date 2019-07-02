@@ -3,7 +3,6 @@ package vboxdriver
 import (
 	"os"
 	"testing"
-	"time"
 )
 
 func TestRunWithResults(t *testing.T) {
@@ -147,7 +146,7 @@ func TestNetworkOperations(t *testing.T) {
 		} else {
 
 			t.Logf("Host starting worked. Now waiting twenty seconds, and forwatrding SSH port...")
-			time.Sleep(20 * time.Second)
+			newnode.WaitForStateChange(20)
 			err = newnode.ForwardSSHPort(10001)
 			if err != nil {
 				t.Logf("SSH port forwarding failed with error: %v", err)
@@ -174,7 +173,7 @@ func TestNetworkOperations(t *testing.T) {
 	}
 
 	t.Logf("CreateNode seems to have created node with name %s and status %s. Now waiting 20 seconds and calling DeleteHost...", newnode.Name(), newnode.Status())
-	time.Sleep(20 * time.Second)
+	newnode.WaitForStateChange(20)
 	err = drv.DeleteHost("champu", "zintakova")
 	if err != nil {
 		t.Logf("Error from DeleteHost: %v\n", err)

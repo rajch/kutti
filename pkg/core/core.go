@@ -1,10 +1,5 @@
 package core
 
-import (
-	"os"
-	"path"
-)
-
 // VMDriver describes common VM operations
 type VMDriver interface {
 	ListNetworks() ([]VMNetwork, error)
@@ -20,9 +15,9 @@ type VMDriver interface {
 	CreateHost(hostname string, networkname string, position int) (VMHost, error)
 	GetHost(hostname string, networkname string) (VMHost, error)
 	DeleteHost(hostname string, networkname string) error
-
-	GetSSHAddressForNode(nodepostion int) string
 }
+
+type driverregisterfunc func() (VMDriver, error)
 
 // VMNetwork describes a virtual network
 type VMNetwork interface {
@@ -38,24 +33,18 @@ type VMHost interface {
 
 	Start() error
 	Stop() error
+	WaitForStateChange(int)
 	ForwardSSHPort(int) error
 }
 
-// CacheDir returns the location where the kutti cache should reside
-func CacheDir() (result string, err error) {
-	result, err = os.UserCacheDir()
-	if err != nil {
-		return
-	}
+// Cluster defines a kutti Kubernetes cluster
+type Cluster interface {
+	Name() string
+	Status() string
+}
 
-	result = path.Join(result, "kutti")
-	_, err = os.Stat(result)
-	if os.IsNotExist(err) {
-		err = os.Mkdir(result, 0755)
-		if err != nil {
-			result = ""
-		}
-	}
-
-	return
+func init() {
+	drivers = make(map[string]func() (VMDriver, error))
+	Clusters = make(map[string]Cluster)
+	DefaultCluster = nil
 }

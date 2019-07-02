@@ -386,6 +386,10 @@ func New() (*VBoxVMDriver, error) {
 	return result, nil
 }
 
+func newfordriver() (core.VMDriver, error) {
+	return New()
+}
+
 func findvboxmanage() (path string, err error) {
 
 	// First, try looking it up on the path
@@ -418,4 +422,8 @@ func trimQuotes(s string) string {
 		}
 	}
 	return s
+}
+
+func init() {
+	core.RegisterDriver("vbox", newfordriver)
 }

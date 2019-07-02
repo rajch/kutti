@@ -1,25 +1,8 @@
 package core
 
-import "fmt"
-
-// Cluster defines a kutti Kubernetes cluster
-type Cluster interface {
-	Name() string
-	Status() string
-}
-
-type kuttiNode struct {
-	name   string
-	status string
-}
-
-func (kn *kuttiNode) Name() string {
-	return kn.name
-}
-
-func (kn *kuttiNode) Status() string {
-	return kn.status
-}
+import (
+	"fmt"
+)
 
 type kuttiCluster struct {
 	name   string
@@ -73,24 +56,14 @@ func (c *kuttiCluster) ensurenetwork() error {
 	return nil
 }
 
-func (c *kuttiCluster) addnode(nodename string) error {
+func (c *kuttiCluster) addnode(nodename string) (VMHost, error) {
 	newnode, err := c.driver.CreateHost(nodename, c.networkname(), len(c.hosts))
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	c.hosts = append(c.hosts, newnode)
-	return nil
-}
-
-func (c *kuttiCluster) getnode(nodename string, position int) error {
-	newnode, err := c.driver.GetHost(nodename, c.networkname())
-	if err != nil {
-		return err
-	}
-
-	c.hosts[position] = newnode
-	return nil
+	return newnode, nil
 }
 
 func (c *kuttiCluster) Name() string {
@@ -102,33 +75,41 @@ func (c *kuttiCluster) Status() string {
 }
 
 // NewCluster creates a new cluster object
-func NewCluster(name string, driver VMDriver) (Cluster, error) {
+func NewCluster(driver VMDriver, name string, masternodename string, mastermappedport int) (Cluster, error) {
 	result := &kuttiCluster{name: name, driver: driver, status: "Created"}
 
+	// Ensure network is created
 	err := result.ensurenetwork()
 	if err != nil {
 		return nil, err
 	}
 
-	return result, nil
-}
-
-// LoadCluster creates an existing cluster
-func LoadCluster(name string, driver VMDriver, hostnames ...string) (Cluster, error) {
-	result := &kuttiCluster{name: name, driver: driver, status: "Fetched"}
-
-	err := result.ensurenetwork()
+	// Create master node
+	masternode, err := result.addnode(masternodename)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("Could not create master node for cluster %s: %v", name, err)
 	}
 
-	// TODO: make this better
-	result.hosts = make([]VMHost, len(hostnames))
-	for i, value := range hostnames {
-		if err := result.getnode(value, i); err != nil {
-			return nil, err
-		}
+	// Start master node and wait
+	err = masternode.Start()
+	if err != nil {
+		return result, fmt.Errorf("Cluster created, but could not start master node %s:%v", masternodename, err)
 	}
+	masternode.WaitForStateChange(20)
+
+	// Forward SSH port
+	err = masternode.ForwardSSHPort(mastermappedport)
+	if err != nil {
+		return result, fmt.Errorf("Could not forward SSH port:%v", err)
+	}
+
+	// TODO: rename master node
+
+	// TODO: run kubeadm init in master node
+
+	// TODO: add network
+
+	// TODO: add local provisioner
 
 	return result, nil
 }
