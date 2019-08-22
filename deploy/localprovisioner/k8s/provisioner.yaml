@@ -173,7 +173,7 @@ spec:
       volumes:
         - name: kuttivolsroot
           hostPath:
-            path: /data/kuttivolsroot
+            path: /kutti/vols
             type: DirectoryOrCreate
 ---
 # Sample StorageClass
