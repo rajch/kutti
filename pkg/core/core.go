@@ -45,12 +45,12 @@ type Cluster interface {
 
 // SSHClient defines a simple SSH client
 type SSHClient interface {
-	RunWithResults(string, string) (string, error)
+	RunWithResults(address string, command string) (string, error)
 }
 
 func init() {
 	drivers = make(map[string]func() (VMDriver, error))
 	Clusters = make(map[string]Cluster)
 	DefaultCluster = nil
-	DefaultClient = newSSHClient("user1", "Pass@word1")
+	DefaultClient = newSSHClient("kuttiadmin", "Pass@word1")
 }

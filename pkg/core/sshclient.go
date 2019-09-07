@@ -6,6 +6,10 @@ import (
 	"golang.org/x/crypto/ssh"
 )
 
+const (
+	commandSetHostName = "sudo kutti-setupscripts/set-hostname.sh %s"
+)
+
 type sshclient struct {
 	config *ssh.ClientConfig
 }
@@ -26,7 +30,7 @@ func (sc *sshclient) RunWithResults(address string, command string) (string, err
 
 	resultdata, err := session.Output(command)
 	if err != nil {
-		return "", fmt.Errorf("Command '%s' at address %s produced an error:%v ", command, address, err)
+		return string(resultdata), fmt.Errorf("Command '%s' at address %s produced an error:%v ", command, address, err)
 	}
 
 	return string(resultdata), nil

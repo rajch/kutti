@@ -104,6 +104,13 @@ func NewCluster(driver VMDriver, name string, masternodename string, mastermappe
 	}
 
 	// TODO: rename master node
+	output, err := DefaultClient.RunWithResults(
+		masternode.SSHAddress(),
+		fmt.Sprintf(commandSetHostName, masternodename),
+	)
+	if err != nil {
+		return result, fmt.Errorf("Could not rename master node to %s at address %s:Error:%v:Output:%s", masternodename, masternode.SSHAddress(), err, output)
+	}
 
 	// TODO: run kubeadm init in master node
 

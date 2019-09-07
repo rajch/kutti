@@ -44,11 +44,13 @@ func TestNewCluster(t *testing.T) {
 	}
 
 	t.Log(cluster)
+	t.Log("As of now, you will have to remove the cluster artifacts yourself.")
+	t.Log("Remember to remove the VMs, the NAT network, and the DHCP server (VBoxManage dhcpserver remove --netname fecknet\n")
 }
 
 func TestSSHClient(t *testing.T) {
 	t.Logf("Testing SSH client, assuming a server at localhost:10001")
-	results, err := core.DefaultClient.RunWithResults("localhost:10001", "ls -l")
+	results, err := core.DefaultClient.RunWithResults("localhost:10001", "echo HOSTNAME: $(hostname) && echo PWD: $(pwd) && ls -l")
 	if err != nil {
 		t.Logf("SSH Client failed with error:%v", err)
 		t.FailNow()
