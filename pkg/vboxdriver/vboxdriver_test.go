@@ -145,7 +145,7 @@ func TestNetworkOperations(t *testing.T) {
 			t.Fail()
 		} else {
 
-			t.Logf("Host starting worked. Now waiting twenty seconds, and forwatrding SSH port...")
+			t.Logf("Host starting worked. Now waiting twenty seconds, and forwarding SSH port...")
 			newnode.WaitForStateChange(20)
 			err = newnode.ForwardSSHPort(10001)
 			if err != nil {

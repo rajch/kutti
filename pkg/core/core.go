@@ -17,7 +17,7 @@ type VMDriver interface {
 	DeleteHost(hostname string, networkname string) error
 }
 
-type driverregisterfunc func() (VMDriver, error)
+// type driverregisterfunc func() (VMDriver, error)
 
 // VMNetwork describes a virtual network
 type VMNetwork interface {
