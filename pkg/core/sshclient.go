@@ -7,7 +7,7 @@ import (
 )
 
 const (
-	commandSetHostName = "sudo kutti-setupscripts/set-hostname.sh %s"
+	commandSetHostName = "sudo rw-installscripts/set-hostname.sh %s"
 )
 
 type sshclient struct {

@@ -5,8 +5,9 @@ import (
 )
 
 type kuttiCluster struct {
-	name   string
-	driver VMDriver
+	name       string
+	driver     VMDriver
+	k8sversion string
 
 	network VMNetwork
 	hosts   []VMHost
@@ -57,7 +58,7 @@ func (c *kuttiCluster) ensurenetwork() error {
 }
 
 func (c *kuttiCluster) addnode(nodename string) (VMHost, error) {
-	newnode, err := c.driver.CreateHost(nodename, c.networkname(), len(c.hosts))
+	newnode, err := c.driver.CreateHost(nodename, c.networkname(), len(c.hosts), c.k8sversion)
 	if err != nil {
 		return nil, err
 	}
@@ -70,12 +71,16 @@ func (c *kuttiCluster) Name() string {
 	return c.name
 }
 
+func (c *kuttiCluster) K8sVersion() string {
+	return c.k8sversion
+}
+
 func (c *kuttiCluster) Status() string {
 	return c.status
 }
 
 // NewCluster creates a new cluster object
-func NewCluster(driver VMDriver, name string, masternodename string, mastermappedport int) (Cluster, error) {
+func NewCluster(driver VMDriver, name string, k8sversion string, masternodename string, mastermappedport int) (Cluster, error) {
 	result := &kuttiCluster{name: name, driver: driver, status: "Created"}
 
 	// Ensure network is created
@@ -93,6 +98,7 @@ func NewCluster(driver VMDriver, name string, masternodename string, mastermappe
 	// Start master node and wait
 	err = masternode.Start()
 	if err != nil {
+		result.status = "Error"
 		return result, fmt.Errorf("Cluster created, but could not start master node %s:%v", masternodename, err)
 	}
 	masternode.WaitForStateChange(20)
@@ -100,7 +106,8 @@ func NewCluster(driver VMDriver, name string, masternodename string, mastermappe
 	// Forward SSH port
 	err = masternode.ForwardSSHPort(mastermappedport)
 	if err != nil {
-		return result, fmt.Errorf("Could not forward SSH port:%v", err)
+		result.status = "Error"
+		return result, fmt.Errorf("Cluster and master node created, but could not forward SSH port:%v", err)
 	}
 
 	// TODO: rename master node
@@ -109,7 +116,8 @@ func NewCluster(driver VMDriver, name string, masternodename string, mastermappe
 		fmt.Sprintf(commandSetHostName, masternodename),
 	)
 	if err != nil {
-		return result, fmt.Errorf("Could not rename master node to %s at address %s:Error:%v:Output:%s", masternodename, masternode.SSHAddress(), err, output)
+		result.status = "Error"
+		return result, fmt.Errorf("Cluster and master node created, but could not rename master node to %s at address %s:Error:%v:Output:%s", masternodename, masternode.SSHAddress(), err, output)
 	}
 
 	// TODO: run kubeadm init in master node
@@ -118,5 +126,6 @@ func NewCluster(driver VMDriver, name string, masternodename string, mastermappe
 
 	// TODO: add local provisioner
 
+	result.status = "Ready"
 	return result, nil
 }

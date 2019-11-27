@@ -37,7 +37,7 @@ func TestNewCluster(t *testing.T) {
 		t.FailNow()
 	}
 
-	cluster, err := core.NewCluster(driver, "feck", "manager", 10001)
+	cluster, err := core.NewCluster(driver, "feck", "1.14", "manager", 10001)
 	if err != nil {
 		t.Logf("Error while creating cluster:%v", err)
 		t.FailNow()

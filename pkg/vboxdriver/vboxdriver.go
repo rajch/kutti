@@ -241,7 +241,7 @@ func (vd *VBoxVMDriver) ListHosts() ([]core.VMHost, error) {
 // CreateHost creates a VM, and connects it to a previously created NAT network.
 // It also starts the VM, and creates a port fowarding rule on the network to
 // forward the SSH port.
-func (vd *VBoxVMDriver) CreateHost(hostname string, networkname string, position int) (core.VMHost, error) {
+func (vd *VBoxVMDriver) CreateHost(hostname string, networkname string, position int, k8sversion string) (core.VMHost, error) {
 	/*
 		We need to run the following two VBoxManage commands, in order:
 
@@ -259,12 +259,13 @@ func (vd *VBoxVMDriver) CreateHost(hostname string, networkname string, position
 	}
 
 	// TODO: ovafile hardcoded here. Correct.
-	ovafile := path.Join(cachedir, "Krishna-1.0.ova")
+	// ovafile := path.Join(cachedir, "Krishna-1.0.ova")
+	ovafile := path.Join(cachedir, "kutti-1.14.ova")
 	if _, err = os.Stat(ovafile); err != nil {
 		return nil, fmt.Errorf("Could not retrieve ovafile %s: %v", ovafile, err)
 	}
 
-	_, err = runwithresults(
+	l, err := runwithresults(
 		vd.vboxmanagepath,
 		"import",
 		ovafile,
@@ -275,7 +276,7 @@ func (vd *VBoxVMDriver) CreateHost(hostname string, networkname string, position
 	)
 
 	if err != nil {
-		return nil, fmt.Errorf("Could not import ovafile %s: %v", ovafile, err)
+		return nil, fmt.Errorf("Could not import ovafile %s: %v(%v)", ovafile, err, l)
 	}
 
 	// Attach newly created VM to NAT Network
@@ -406,10 +407,11 @@ func findvboxmanage() (path string, err error) {
 
 func runwithresults(execpath string, paramarray ...string) (result string, err error) {
 	cmd := exec.Command(execpath, paramarray...)
-	output, err := cmd.Output()
-	if err != nil {
+	output, err := cmd.CombinedOutput()
+	/*if err != nil {
+		err = fmt.Errorf("%v(%v)", string(cmd.Stderr))
 		return
-	}
+	}*/
 
 	result = string(output)
 	return

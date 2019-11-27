@@ -12,7 +12,7 @@ type VMDriver interface {
 		FetchWorkerNodeImage() error
 	*/
 	ListHosts() ([]VMHost, error)
-	CreateHost(hostname string, networkname string, position int) (VMHost, error)
+	CreateHost(hostname string, networkname string, position int, k8sversion string) (VMHost, error)
 	GetHost(hostname string, networkname string) (VMHost, error)
 	DeleteHost(hostname string, networkname string) error
 }
@@ -40,6 +40,7 @@ type VMHost interface {
 // Cluster defines a kutti Kubernetes cluster
 type Cluster interface {
 	Name() string
+	K8sVersion() string
 	Status() string
 }
 
