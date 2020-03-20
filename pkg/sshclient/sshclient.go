@@ -1,4 +1,4 @@
-package core
+package sshclient
 
 import (
 	"fmt"

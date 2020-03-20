@@ -37,21 +37,12 @@ type VMHost interface {
 	ForwardSSHPort(int) error
 }
 
-// Cluster defines a kutti Kubernetes cluster
-type Cluster interface {
-	Name() string
-	K8sVersion() string
-	Status() string
-}
-
 // SSHClient defines a simple SSH client
 type SSHClient interface {
 	RunWithResults(address string, command string) (string, error)
 }
 
 func init() {
-	drivers = make(map[string]func() (VMDriver, error))
-	Clusters = make(map[string]Cluster)
-	DefaultCluster = nil
-	DefaultClient = newSSHClient("kuttiadmin", "Pass@word1")
+	driverfuncs = make(map[string]func() (VMDriver, error))
+	drivers = make(map[string]VMDriver)
 }

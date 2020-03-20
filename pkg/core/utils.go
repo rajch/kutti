@@ -8,12 +8,17 @@ import (
 
 // RegisterDriver registers a driver with a name to core
 func RegisterDriver(name string, f func() (VMDriver, error)) {
-	drivers[name] = f
+	driverfuncs[name] = f
 }
 
-// NewDriver returns a VMDriver corresponding to the name
-func NewDriver(name string) (VMDriver, error) {
-	f, ok := drivers[name]
+// GetDriver returns a VMDriver corresponding to the name
+func GetDriver(name string) (VMDriver, error) {
+	newdriver, ok := drivers[name]
+	if ok {
+		return newdriver, nil
+	}
+
+	f, ok := driverfuncs[name]
 	if !ok {
 		return nil, fmt.Errorf("Driver '%s' not found", name)
 	}
@@ -26,6 +31,14 @@ func NewDriver(name string) (VMDriver, error) {
 	return newdriver, nil
 }
 
+func ensureDirectory(path string) error {
+	_, err := os.Stat(path)
+	if os.IsNotExist(err) {
+		err = os.Mkdir(path, 0755)
+	}
+	return err
+}
+
 // CacheDir returns the location where the kutti cache should reside
 func CacheDir() (result string, err error) {
 	result, err = os.UserCacheDir()
@@ -34,12 +47,26 @@ func CacheDir() (result string, err error) {
 	}
 
 	result = path.Join(result, "kutti")
-	_, err = os.Stat(result)
-	if os.IsNotExist(err) {
-		err = os.Mkdir(result, 0755)
-		if err != nil {
-			result = ""
-		}
+	err = ensureDirectory(result)
+
+	if err != nil {
+		result = ""
+	}
+	return
+}
+
+// ConfigDir returns the location where the kutti config files reside
+func ConfigDir() (result string, err error) {
+	result, err = os.UserConfigDir()
+	if err != nil {
+		return
+	}
+
+	result = path.Join(result, "kutti")
+	err = ensureDirectory(result)
+
+	if err != nil {
+		result = ""
 	}
 
 	return
