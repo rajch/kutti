@@ -21,7 +21,25 @@ func TestInit(t *testing.T) {
 		t.FailNow()
 	}
 
-	t.Logf("%+v\n", clustermanager.Clusters())
+	//t.Logf("%+v\n", clustermanager)
+}
+
+func TestDrivers(t *testing.T) {
+	var result bool
+	resultp := &result
+
+	clustermanager.ForEachDriver(func(d core.VMDriver) bool {
+		if d.Name() == "vbox" {
+			*resultp = true
+			return true
+		}
+		return false
+	})
+
+	if !result {
+		t.Logf("Driver test failed.")
+		t.FailNow()
+	}
 }
 
 func TestNewCluster(t *testing.T) {
@@ -31,7 +49,8 @@ func TestNewCluster(t *testing.T) {
 		t.FailNow()
 	}
 
-	t.Log(clustermanager.Clusters())
+	cluster, _ := clustermanager.GetCluster("testcluster1")
+	t.Log(*cluster)
 
 	t.Log("As of now, you will have to remove the cluster artifacts yourself.")
 	t.Log("Remember to remove the VMs, the NAT network, and the DHCP server (VBoxManage dhcpserver remove --netname testcluster1net\n")
@@ -50,7 +69,7 @@ func TestAddNewNode(t *testing.T) {
 	}
 
 	t.Logf("Node:%+v", node)
-	t.Logf("Clusters:%+v", clustermanager.Clusters())
+	t.Logf("Cluster:%+v", cluster)
 }
 
 func noTestDeleteNode(t *testing.T) {
@@ -65,5 +84,5 @@ func noTestDeleteNode(t *testing.T) {
 		t.FailNow()
 	}
 
-	t.Logf("Clusters:%+v", clustermanager.Clusters())
+	t.Logf("Cluster:%+v", cluster)
 }

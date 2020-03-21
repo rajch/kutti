@@ -11,6 +11,11 @@ import (
 	"github.com/rajch/kutti/pkg/core"
 )
 
+const (
+	driverName        = "vbox"
+	driverDescription = "Kutti driver for VirtualBox >=6.0"
+)
+
 var (
 	// DefaultNetCIDR is the address range used by virtual networks
 	DefaultNetCIDR = "10.0.3.0/24"
@@ -25,6 +30,22 @@ var (
 // VBoxVMDriver implements the VMDriver interface for VirtualBox
 type VBoxVMDriver struct {
 	vboxmanagepath string
+	status         string
+}
+
+// Name returns the driver idetifier string
+func (vd *VBoxVMDriver) Name() string {
+	return driverName
+}
+
+// Description returns the driver description
+func (vd *VBoxVMDriver) Description() string {
+	return driverDescription
+}
+
+// Status returns the driver status
+func (vd *VBoxVMDriver) Status() string {
+	return vd.status
 }
 
 /*ListNetworks parses the list of NAT networks returned by
@@ -369,6 +390,7 @@ func New() (*VBoxVMDriver, error) {
 	// find VBoxManage tool and set it
 	vbmpath, err := findvboxmanage()
 	if err != nil {
+		result.status = err.Error()
 		return nil, err
 	}
 	result.vboxmanagepath = vbmpath
@@ -376,19 +398,19 @@ func New() (*VBoxVMDriver, error) {
 	// test VBoxManage version
 	vbmversion, err := runwithresults(vbmpath, "--version")
 	if err != nil {
+		result.status = err.Error()
 		return nil, err
 	}
 	var majorversion int
 	_, err = fmt.Sscanf(vbmversion, "%d", &majorversion)
 	if err != nil || majorversion < 6 {
-		return nil, errors.New("Unsupported VBoxManage version " + vbmversion + ". 6.0 and above are supported.")
+		err = fmt.Errorf("unsupported VBoxManage version %v. 6.0 and above are supported", vbmversion)
+		result.status = err.Error()
+		return nil, err
 	}
 
+	result.status = "Ready"
 	return result, nil
-}
-
-func newfordriver() (core.VMDriver, error) {
-	return New()
 }
 
 func findvboxmanage() (path string, err error) {
@@ -427,5 +449,6 @@ func trimQuotes(s string) string {
 }
 
 func init() {
-	core.RegisterDriver("vbox", newfordriver)
+	newdriver, _ := New()
+	core.RegisterDriver(driverName, newdriver)
 }

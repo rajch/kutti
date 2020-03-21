@@ -138,9 +138,9 @@ func Load() error {
 }
 
 // Clusters returns clusters
-func Clusters() map[string]*Cluster {
-	return manager.Clusters
-}
+// func Clusters() map[string]*Cluster {
+// 	return manager.Clusters
+// }
 
 // GetCluster gets a named cluster, or nil if not present
 func GetCluster(name string) (*Cluster, bool) {
@@ -151,9 +151,23 @@ func GetCluster(name string) (*Cluster, bool) {
 	return cluster, true
 }
 
+// ForEachCluster iterates over clusters
+func ForEachCluster(f func(*Cluster) bool) {
+	for _, cluster := range manager.Clusters {
+		if cancel := f(cluster); cancel {
+			break
+		}
+	}
+}
+
 // DefaultCluster returns the default cluster, or nil if none has been set
 func DefaultCluster() *Cluster {
 	return manager.DefaultCluster()
+}
+
+// ForEachDriver iterates over drivers
+func ForEachDriver(f func(core.VMDriver) bool) {
+	core.ForEachDriver(f)
 }
 
 func init() {

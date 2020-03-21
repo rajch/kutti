@@ -2,6 +2,10 @@ package core
 
 // VMDriver describes common VM operations
 type VMDriver interface {
+	Name() string
+	Description() string
+	Status() string
+
 	ListNetworks() ([]VMNetwork, error)
 	CreateNetwork(netname string) (VMNetwork, error)
 	GetNetwork(netname string) (VMNetwork, error)
@@ -43,6 +47,6 @@ type SSHClient interface {
 }
 
 func init() {
-	driverfuncs = make(map[string]func() (VMDriver, error))
+	//driverfuncs = make(map[string]func() (VMDriver, error))
 	drivers = make(map[string]VMDriver)
 }

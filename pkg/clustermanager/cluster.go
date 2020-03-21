@@ -24,14 +24,15 @@ type Cluster struct {
 
 func (c *Cluster) ensureDriver() error {
 	var err error = nil
+	var ok bool
 	if c.driver == nil {
-		c.driver, err = core.GetDriver(c.DriverName)
-		if err != nil {
-			c.status = "DriverError:" + err.Error()
+		c.driver, ok = core.GetDriver(c.DriverName)
+		if !ok {
+			c.status = "DriverNotPresent"
 			return err
 		}
 
-		c.status = "DriverReady"
+		c.status = "Driver" + c.driver.Status()
 	}
 
 	return nil

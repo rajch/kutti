@@ -23,8 +23,8 @@ func init() {
 func clusterls(cmd *cobra.Command, args []string) {
 	fmt.Println("Name\tDriver\tK8s Version\tNodes")
 	clustermanager.Load()
-	clusters := clustermanager.Clusters()
-	for _, cluster := range clusters {
+	clustermanager.ForEachCluster(func(cluster *clustermanager.Cluster) bool {
 		fmt.Printf("%v\t%v\t%v\t%v\n", cluster.Name, cluster.DriverName, cluster.K8sVersion, len(cluster.Nodes))
-	}
+		return false
+	})
 }
