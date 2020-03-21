@@ -130,7 +130,7 @@ func TestNetworkOperations(t *testing.T) {
 	}
 
 	t.Log("ListNetwork seems to have worked. Now calling CreateHost...")
-	newnode, err := drv.CreateHost("champu", "zintakova", 0, "1.14")
+	newnode, err := drv.CreateHost("champu", "zintakova", "zinta", "1.14")
 	if err != nil {
 		t.Logf("Error from CreateHost: %v\n", err)
 		t.FailNow()
@@ -174,7 +174,7 @@ func TestNetworkOperations(t *testing.T) {
 
 	t.Logf("CreateNode seems to have created node with name %s and status %s. Now waiting 20 seconds and calling DeleteHost...", newnode.Name(), newnode.Status())
 	newnode.WaitForStateChange(20)
-	err = drv.DeleteHost("champu", "zintakova")
+	err = drv.DeleteHost("champu", "zintakova", "zinta")
 	if err != nil {
 		t.Logf("Error from DeleteHost: %v\n", err)
 		t.FailNow()

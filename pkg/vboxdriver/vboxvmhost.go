@@ -15,11 +15,16 @@ const (
 type VBoxVMHost struct {
 	driver *VBoxVMDriver
 
-	name    string
-	netname string
-	status  string
+	name        string
+	netname     string
+	clustername string
+	status      string
 
 	hostport int
+}
+
+func (vh *VBoxVMHost) qname() string {
+	return vh.clustername + "-" + vh.name
 }
 
 // Name is the name of the host
@@ -49,7 +54,7 @@ func (vh *VBoxVMHost) Start() error {
 	output, err := runwithresults(
 		vh.driver.vboxmanagepath,
 		"startvm",
-		vh.name,
+		vh.qname(),
 		"--type",
 		"headless",
 	)
@@ -67,7 +72,7 @@ func (vh *VBoxVMHost) Stop() error {
 	_, err := runwithresults(
 		vh.driver.vboxmanagepath,
 		"controlvm",
-		vh.name,
+		vh.qname(),
 		"acpipowerbutton",
 	)
 
@@ -92,7 +97,7 @@ func (vh *VBoxVMHost) ForwardSSHPort(hostport int) error {
 	// The brackets [] are to be taken literally.
 	sshrule := fmt.Sprintf(
 		"SSH Node %s:tcp:[]:%d:[%s]:22",
-		vh.name,
+		vh.qname(),
 		hostport,
 		vh.ipAddress(),
 	)
@@ -177,7 +182,7 @@ func (vh *VBoxVMHost) getproperty(propname string) (string, bool) {
 		vh.driver.vboxmanagepath,
 		"guestproperty",
 		"get",
-		vh.name,
+		vh.qname(),
 		propname,
 	)
 
@@ -198,7 +203,7 @@ func (vh *VBoxVMHost) setproperty(propname string, value string) error {
 		vh.driver.vboxmanagepath,
 		"guestproperty",
 		"set",
-		vh.name,
+		vh.qname(),
 		propname,
 		value,
 	)

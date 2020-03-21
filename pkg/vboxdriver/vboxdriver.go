@@ -262,7 +262,7 @@ func (vd *VBoxVMDriver) ListHosts() ([]core.VMHost, error) {
 // CreateHost creates a VM, and connects it to a previously created NAT network.
 // It also starts the VM, and creates a port fowarding rule on the network to
 // forward the SSH port.
-func (vd *VBoxVMDriver) CreateHost(hostname string, networkname string, position int, k8sversion string) (core.VMHost, error) {
+func (vd *VBoxVMDriver) CreateHost(hostname string, networkname string, clustername string, k8sversion string) (core.VMHost, error) {
 	/*
 		We need to run the following two VBoxManage commands, in order:
 
@@ -293,7 +293,11 @@ func (vd *VBoxVMDriver) CreateHost(hostname string, networkname string, position
 		"--vsys",
 		"0",
 		"--vmname",
-		hostname,
+		clustername+"-"+hostname,
+		"--vsys",
+		"0",
+		"--group",
+		"/"+clustername,
 	)
 
 	if err != nil {
@@ -301,12 +305,12 @@ func (vd *VBoxVMDriver) CreateHost(hostname string, networkname string, position
 	}
 
 	// Attach newly created VM to NAT Network
-	newhost := &VBoxVMHost{driver: vd, name: hostname, netname: networkname, status: "Created"}
+	newhost := &VBoxVMHost{driver: vd, name: hostname, netname: networkname, clustername: clustername, status: "Created"}
 
 	_, err = runwithresults(
 		vd.vboxmanagepath,
 		"modifyvm",
-		hostname,
+		newhost.qname(),
 		"--nic1",
 		"natnetwork",
 		"--nat-network1",
@@ -338,21 +342,21 @@ func (vd *VBoxVMDriver) CreateHost(hostname string, networkname string, position
 }
 
 // GetHost returns the named host, or an error.
-func (vd *VBoxVMDriver) GetHost(hostname string, networkname string) (core.VMHost, error) {
+func (vd *VBoxVMDriver) GetHost(hostname string, networkname string, clustername string) (core.VMHost, error) {
 	output, err := runwithresults(
 		vd.vboxmanagepath,
 		"guestproperty",
 		"enumerate",
-		hostname,
+		clustername+"-"+hostname,
 		"--patterns",
-		"/VirtualBox/GuestInfo/Net/0/*",
+		"/VirtualBox/GuestInfo/Net/0/*|/kutti/*",
 	)
 
 	if err != nil {
 		return nil, fmt.Errorf("Host %s not found", hostname)
 	}
 
-	foundhost := &VBoxVMHost{driver: vd, name: hostname, netname: networkname, status: "Fetched"}
+	foundhost := &VBoxVMHost{driver: vd, name: hostname, netname: networkname, clustername: clustername, status: "Fetched"}
 
 	if output != "" {
 		// Parse output
@@ -363,7 +367,7 @@ func (vd *VBoxVMDriver) GetHost(hostname string, networkname string) (core.VMHos
 }
 
 // DeleteHost deletes a VM.
-func (vd *VBoxVMDriver) DeleteHost(hostname string, networkname string) error {
+func (vd *VBoxVMDriver) DeleteHost(hostname string, networkname string, clustername string) error {
 	/*
 		We need to run:
 
@@ -372,7 +376,7 @@ func (vd *VBoxVMDriver) DeleteHost(hostname string, networkname string) error {
 	output, err := runwithresults(
 		vd.vboxmanagepath,
 		"unregistervm",
-		hostname,
+		clustername+"-"+hostname,
 		"--delete",
 	)
 

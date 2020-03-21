@@ -16,9 +16,9 @@ type VMDriver interface {
 		FetchWorkerNodeImage() error
 	*/
 	ListHosts() ([]VMHost, error)
-	CreateHost(hostname string, networkname string, position int, k8sversion string) (VMHost, error)
-	GetHost(hostname string, networkname string) (VMHost, error)
-	DeleteHost(hostname string, networkname string) error
+	CreateHost(hostname string, networkname string, clustername string, k8sversion string) (VMHost, error)
+	GetHost(hostname string, networkname string, clustername string) (VMHost, error)
+	DeleteHost(hostname string, networkname string, clustername string) error
 }
 
 // type driverregisterfunc func() (VMDriver, error)

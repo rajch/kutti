@@ -43,13 +43,13 @@ func TestDrivers(t *testing.T) {
 }
 
 func TestNewCluster(t *testing.T) {
-	err := clustermanager.NewEmptyCluster("testcluster1", "1.17", "vbox")
+	err := clustermanager.NewEmptyCluster("testclust1", "1.17", "vbox")
 	if err != nil {
 		t.Logf("NewEmptyCluster failed with error:%v", err)
 		t.FailNow()
 	}
 
-	cluster, _ := clustermanager.GetCluster("testcluster1")
+	cluster, _ := clustermanager.GetCluster("testclust1")
 	t.Log(*cluster)
 
 	t.Log("As of now, you will have to remove the cluster artifacts yourself.")
@@ -57,9 +57,9 @@ func TestNewCluster(t *testing.T) {
 }
 
 func TestAddNewNode(t *testing.T) {
-	cluster, ok := clustermanager.GetCluster("testcluster1")
+	cluster, ok := clustermanager.GetCluster("testclust1")
 	if !ok {
-		t.Log("Cluster 'testcluster1' not foumd. This test is supposed to run after TestNewCluster.")
+		t.Log("Cluster 'testclust1' not foumd. This test is supposed to run after TestNewCluster.")
 		t.FailNow()
 	}
 	node, err := cluster.AddUninitializedNode("testnode1")
@@ -73,9 +73,9 @@ func TestAddNewNode(t *testing.T) {
 }
 
 func noTestDeleteNode(t *testing.T) {
-	cluster, ok := clustermanager.GetCluster("testcluster1")
+	cluster, ok := clustermanager.GetCluster("testclust1")
 	if !ok {
-		t.Log("Cluster 'testcluster1' not foumd. This test is supposed to run after TestNewCluster.")
+		t.Log("Cluster 'testclust1' not foumd. This test is supposed to run after TestNewCluster.")
 		t.FailNow()
 	}
 	err := cluster.DeleteNode("testnode1")
