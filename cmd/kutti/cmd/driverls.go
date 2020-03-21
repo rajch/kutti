@@ -33,10 +33,10 @@ func init() {
 }
 
 func driverls(cmd *cobra.Command, args []string) {
-	fmt.Println("Name\tDescription\tStatus")
+	fmt.Printf("%-12.12s  %-40.40s  %-12.12s\n", "NAME", "DESCRIPTION", "STATUS")
 	clustermanager.Load()
 	clustermanager.ForEachDriver(func(driver core.VMDriver) bool {
-		fmt.Printf("%v\t%v\t%v\n", driver.Name(), driver.Description(), driver.Status())
+		fmt.Printf("%-12.12s  %-40.40s  %-12.12s\n", driver.Name(), driver.Description(), driver.Status())
 		return false
 	})
 }

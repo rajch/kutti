@@ -21,10 +21,10 @@ func init() {
 }
 
 func clusterls(cmd *cobra.Command, args []string) {
-	fmt.Println("Name\tDriver\tK8s Version\tNodes")
+	fmt.Printf("%-21.21s  %-10.10s  %-11.11s  %-10.10s\n", "NAME", "DRIVER", "K8S VERSION", "NODES")
 	clustermanager.Load()
 	clustermanager.ForEachCluster(func(cluster *clustermanager.Cluster) bool {
-		fmt.Printf("%v\t%v\t%v\t%v\n", cluster.Name, cluster.DriverName, cluster.K8sVersion, len(cluster.Nodes))
+		fmt.Printf("%-21.21s  %-10.10s  %-11.11s  %-10d\n", cluster.Name, cluster.DriverName, cluster.K8sVersion, len(cluster.Nodes))
 		return false
 	})
 }
