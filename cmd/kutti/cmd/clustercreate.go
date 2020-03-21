@@ -88,6 +88,6 @@ func clustercreate(cmd *cobra.Command, args []string) {
 	}
 
 	if err != nil {
-		fmt.Printf("Could not create cluster %s: %v\n", clustername, err)
+		fmt.Printf("Could not create cluster %s: %v.\n", clustername, err)
 	}
 }

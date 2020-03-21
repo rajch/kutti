@@ -134,8 +134,6 @@ func (c *Cluster) DeleteNode(nodename string) error {
 }
 
 func newEmptyCluster(name string, k8sversion string, drivername string) (*Cluster, error) {
-	// TODO: validate name and k8sversion
-
 	newCluster := &Cluster{
 		Name:       name,
 		K8sVersion: k8sversion,

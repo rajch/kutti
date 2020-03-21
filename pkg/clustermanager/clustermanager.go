@@ -2,11 +2,19 @@ package clustermanager
 
 import (
 	"encoding/json"
+	"errors"
 	"io/ioutil"
 	"os"
 	"path"
+	"regexp"
 
 	"github.com/rajch/kutti/pkg/core"
+)
+
+// Variables
+var (
+	ErrInvalidName   = errors.New("invalid name. Valid names are up to 10 characters long, must start with a lowercase letter, and may contain lowercase letters and digits only")
+	ErrClusterExists = errors.New("cluster already exists")
 )
 
 type clusterManager struct {
@@ -19,8 +27,30 @@ func (cm *clusterManager) DefaultCluster() *Cluster {
 	return result
 }
 
+// IsValidName checks for the validity of a name.
+// Valid names are up to 10 characters long, must start with a lowercase letter, and may contain lowercase letters and digits only.
+func IsValidName(name string) bool {
+	matched, _ := regexp.MatchString("^[a-z]([a-z0-9]{1,9})$", name)
+	return matched
+}
+
 // NewEmptyCluster creates a new, empty cluster
 func NewEmptyCluster(name string, k8sversion string, drivername string) error {
+	// Validate name
+	if !IsValidName(name) {
+		return ErrInvalidName
+	}
+
+	// Check if name exists
+	_, ok := manager.Clusters[name]
+	if ok {
+		return ErrClusterExists
+	}
+
+	// TODO: Validate driver
+
+	// TODO: Validate k8sversion
+
 	newCluster, err := newEmptyCluster(name, k8sversion, drivername)
 	if err != nil {
 		return err
