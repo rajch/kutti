@@ -65,6 +65,12 @@ func (c *Cluster) createNetwork() error {
 	return nil
 }
 
+// func (c *Cluster) ensurenodes() {
+// 	for _, node := range c.Nodes {
+// 		node.cluster = c
+// 	}
+// }
+
 // func (c *Cluster) ensureHosts() error {
 // 	if len(c.hosts) == 0 {
 // 		for _, node := range c.Nodes {
@@ -82,15 +88,17 @@ func (c *Cluster) createNetwork() error {
 // 	return nil
 // }
 
-func (c *Cluster) addnode(nodename string) (*Node, error) {
+func (c *Cluster) addnode(nodename string, nodetype string) (*Node, error) {
 	err := c.ensureDriver()
 	if err != nil {
 		return nil, err
 	}
 
 	newnode := &Node{
-		cluster: c,
-		Name:    nodename,
+		cluster:     c,
+		ClusterName: c.Name,
+		Name:        nodename,
+		Type:        nodetype,
 	}
 
 	err = newnode.createHost()
@@ -120,7 +128,7 @@ func (c *Cluster) deletenode(nodename string) error {
 
 // AddUninitializedNode adds a node, but does not start it or join it to the cluster
 func (c *Cluster) AddUninitializedNode(nodename string) (*Node, error) {
-	return c.addnode(nodename)
+	return c.addnode(nodename, "Unmanaged")
 }
 
 // DeleteNode deletes a node completely

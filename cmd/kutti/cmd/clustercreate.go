@@ -12,6 +12,7 @@ import (
 // clustercreateCmd represents the clustercreate command
 var clustercreateCmd = &cobra.Command{
 	Use:           "create CLUSTERNAME",
+	Aliases:       []string{"add"},
 	Short:         "Create a new cluster",
 	Long:          `Create a new cluster.`,
 	Args:          clustercreateargs,

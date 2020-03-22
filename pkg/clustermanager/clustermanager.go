@@ -125,6 +125,10 @@ func Load() error {
 		}
 
 		manager = cm
+		// ForEachCluster(func(c *Cluster) bool {
+		// 	c.ensurenodes()
+		// 	return false
+		// })
 		return nil
 	}
 
