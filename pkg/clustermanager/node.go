@@ -1,6 +1,8 @@
 package clustermanager
 
 import (
+	"fmt"
+
 	"github.com/rajch/kutti/pkg/core"
 )
 
@@ -51,7 +53,40 @@ func (n *Node) ensureHost() error {
 
 // Status returns the current node status
 func (n *Node) Status() string {
-	n.ensureHost()
-	// TODO: Get complete status here
+	err := n.ensureHost()
+	if err != nil {
+		return "Unknown"
+	}
+
 	return n.host.Status()
+}
+
+// Start starts a node
+func (n *Node) Start() error {
+	err := n.ensureHost()
+	if err != nil {
+		return err
+	}
+
+	if n.Status() == "Stopped" {
+		return n.host.Start()
+	}
+
+	return fmt.Errorf("cannot start node '%v'", n.Name)
+
+}
+
+// Stop starts a node
+func (n *Node) Stop() error {
+	err := n.ensureHost()
+	if err != nil {
+		return err
+	}
+
+	if n.Status() == "Running" {
+		return n.host.Stop()
+	}
+
+	return fmt.Errorf("cannot stop node '%v'", n.Name)
+
 }
