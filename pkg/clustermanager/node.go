@@ -53,5 +53,5 @@ func (n *Node) ensureHost() error {
 func (n *Node) Status() string {
 	n.ensureHost()
 	// TODO: Get complete status here
-	return n.status
+	return n.host.Status()
 }

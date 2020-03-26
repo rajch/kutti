@@ -20,7 +20,7 @@ localprovisioner: out/kutti-localprovisioner
 localprovisioner-image: out/kutti-localprovisioner build/package/kutti-localprovisioner/local.Dockerfile
 	docker image build -t $(REGISTRY_USER)/kutti-localprovisioner:$(IMAGE_TAG) -f build/package/kutti-localprovisioner/local.Dockerfile .
 
-out/kutti: cmd/kutti/main.go cmd/kutti/cmd/*.go
+out/kutti: cmd/kutti/main.go cmd/kutti/cmd/*.go pkg/clustermanager/*.go pkg/vboxdriver/*.go pkg/core/*.go
 	CGO_ENABLED=0 go build -o $@ $<
 
 

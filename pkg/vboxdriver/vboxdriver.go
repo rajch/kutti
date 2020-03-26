@@ -318,9 +318,10 @@ func (vd *VBoxVMDriver) CreateHost(hostname string, networkname string, clustern
 	)
 
 	if err != nil {
+		newhost.status = fmt.Sprintf("Error: Could not attach node %s to network %s: %v", hostname, networkname, err)
 		return newhost, fmt.Errorf("Could not attach node %s to network %s: %v", hostname, networkname, err)
 	}
-	newhost.status = "NetworkAttached"
+	//newhost.status = "NetworkAttached"
 
 	/*
 		// Start the host
@@ -336,7 +337,7 @@ func (vd *VBoxVMDriver) CreateHost(hostname string, networkname string, clustern
 			return newhost, err
 		}
 	*/
-	newhost.status = "Ready"
+	newhost.status = "Stopped"
 
 	return newhost, nil
 }
@@ -349,18 +350,19 @@ func (vd *VBoxVMDriver) GetHost(hostname string, networkname string, clustername
 		"enumerate",
 		clustername+"-"+hostname,
 		"--patterns",
-		"/VirtualBox/GuestInfo/Net/0/*|/kutti/*",
+		"/VirtualBox/GuestInfo/Net/0/*|/kutti/*|/VirtualBox/GuestInfo/OS/LoggedInUsers",
 	)
 
 	if err != nil {
 		return nil, fmt.Errorf("Host %s not found", hostname)
 	}
 
-	foundhost := &VBoxVMHost{driver: vd, name: hostname, netname: networkname, clustername: clustername, status: "Fetched"}
+	foundhost := &VBoxVMHost{driver: vd, name: hostname, netname: networkname, clustername: clustername, status: "Stopped"}
 
 	if output != "" {
 		// Parse output
-		foundhost.status = "Ready"
+		// foundhost.status = "Ready"
+		foundhost.parseProps(output)
 	}
 
 	return foundhost, nil

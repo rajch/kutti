@@ -2,13 +2,15 @@ package vboxdriver
 
 import (
 	"fmt"
+	"regexp"
 	"strings"
 	"time"
 )
 
 const (
-	propSSHRule   = "/kutti/VMInfo/SSHForwardingRule"
-	propIPAddress = "/VirtualBox/GuestInfo/Net/0/V4/IP"
+	propSSHRule       = "/kutti/VMInfo/SSHForwardingRule"
+	propIPAddress     = "/VirtualBox/GuestInfo/Net/0/V4/IP"
+	propLoggedInUsers = "/VirtualBox/GuestInfo/OS/LoggedInUsers"
 )
 
 // VBoxVMHost implements the VMHost interface for VirtualBox
@@ -19,8 +21,6 @@ type VBoxVMHost struct {
 	netname     string
 	clustername string
 	status      string
-
-	hostport int
 }
 
 func (vh *VBoxVMHost) qname() string {
@@ -32,7 +32,8 @@ func (vh *VBoxVMHost) Name() string {
 	return vh.name
 }
 
-// Status can be "Created", "Fetched" or "Ready"
+// Status can be ~"Created", "Fetched" or "Ready"~
+// Stopped, Running
 func (vh *VBoxVMHost) Status() string {
 	return vh.status
 }
@@ -231,4 +232,54 @@ func (vh *VBoxVMHost) sshRule() string {
 	result, _ := vh.getproperty(propSSHRule)
 	return result
 
+}
+
+// VirtualBox properties, and correspoding actions
+var propMap = map[string]func(*VBoxVMHost, string){
+	propLoggedInUsers: func(vh *VBoxVMHost, value string) {
+		vh.status = "Running"
+	},
+}
+
+func (vh *VBoxVMHost) parseProps(propstr string) {
+	// There are two possibilities. Either:
+	// VBoxManage: error: Could not find a registered machine named 'xxx'
+	// ...
+	// Or:
+	// Name: /VirtualBox/GuestInfo/Net/0/V4/IP, value: 10.0.2.15, timestamp: 1568552111298588000, flags:
+	// ...
+	r1, _ := regexp.Compile("error: (.*)\n")
+	r2, _ := regexp.Compile("Name: (.*), value: (.*), timestamp: (.*), flags:(.*)\n")
+
+	// This should not have made it this far. Still,
+	// belt and suspenders...
+	errorsfound := r1.FindAllStringSubmatch(propstr, 1)
+	if len(errorsfound) != 0 {
+		// deal with the error with:
+		// errorsfound[0][1]
+		vh.status = "Error:" + errorsfound[0][1]
+		return
+	}
+
+	results := r2.FindAllStringSubmatch(propstr, -1)
+	for _, record := range results {
+		// Parse each line with
+		// record[1] - Name and record[2] - Value
+		f, ok := propMap[record[1]]
+		if ok {
+			f(vh, record[2])
+		}
+	}
+
+	// fmt.Println("Not found")
+	// fmt.Println("---------")
+	// fmt.Println(r1.FindAllStringSubmatch(strErr, 1)[0][1])
+	// fmt.Println("NOT Not found")
+	// fmt.Println(r1.FindAllStringSubmatch(strStopped, 1))
+	// fmt.Println("Stopped")
+	// fmt.Println("---------")
+	// results := r2.FindAllStringSubmatch(strStopped, -1)
+	// for i := 0; i < len(results); i++ {
+	// 	fmt.Printf("Name: %v, Value:%v\n", results[i][1], results[i][2])
+	// }
 }
