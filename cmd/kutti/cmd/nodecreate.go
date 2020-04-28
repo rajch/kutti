@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	"errors"
 	"fmt"
 
 	"github.com/spf13/cobra"
@@ -13,7 +12,7 @@ var nodecreateCmd = &cobra.Command{
 	Aliases: []string{"add"},
 	Short:   "Create a node",
 	Long:    `Create a node.`,
-	Args:    nodecreateargs,
+	Args:    nodenameonlyargs,
 	Run:     nodecreate,
 }
 
@@ -31,19 +30,6 @@ func init() {
 	// nodecreateCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 	nodecreateCmd.Flags().StringP("cluster", "c", "", "Cluster name")
 
-}
-
-func nodecreateargs(cmd *cobra.Command, args []string) error {
-	if len(args) == 0 {
-		return errors.New("NODENAME is required")
-	}
-
-	if len(args) > 1 {
-		cmd.SilenceUsage = true
-		return errors.New("only NODENAME is required")
-	}
-
-	return nil
 }
 
 func nodecreate(cmd *cobra.Command, args []string) {

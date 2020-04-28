@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"errors"
 	"fmt"
 
 	"github.com/rajch/kutti/pkg/clustermanager"
@@ -28,6 +29,8 @@ func init() {
 	// nodeCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 }
 
+// Common functions for Node subcommands
+
 func getCluster(cmd *cobra.Command) (*clustermanager.Cluster, error) {
 	var cluster *clustermanager.Cluster
 	clustername, _ := cmd.Flags().GetString("cluster")
@@ -49,4 +52,17 @@ func getCluster(cmd *cobra.Command) (*clustermanager.Cluster, error) {
 	}
 
 	return cluster, nil
+}
+
+func nodenameonlyargs(cmd *cobra.Command, args []string) error {
+	if len(args) == 0 {
+		return errors.New("NODENAME is required")
+	}
+
+	if len(args) > 1 {
+		cmd.SilenceUsage = true
+		return errors.New("only NODENAME is required")
+	}
+
+	return nil
 }

@@ -11,7 +11,7 @@ var nodestopCmd = &cobra.Command{
 	Use:   "stop NODENAME",
 	Short: "Stops a node",
 	Long:  `Stops a node.`,
-	Args:  nodecreateargs,
+	Args:  nodenameonlyargs,
 	Run:   nodestop,
 }
 

@@ -11,7 +11,7 @@ var nodestartCmd = &cobra.Command{
 	Use:   "start NODENAME",
 	Short: "Starts a node",
 	Long:  `Starts a node.`,
-	Args:  nodecreateargs,
+	Args:  nodenameonlyargs,
 	Run:   nodestart,
 }
 

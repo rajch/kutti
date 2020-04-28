@@ -12,7 +12,7 @@ var nodermCmd = &cobra.Command{
 	Aliases: []string{"delete"},
 	Short:   "Delete a node",
 	Long:    `Delete a node.`,
-	Args:    nodecreateargs,
+	Args:    nodenameonlyargs,
 	Run:     noderm,
 }
 
