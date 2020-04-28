@@ -90,3 +90,24 @@ func (n *Node) Stop() error {
 	return fmt.Errorf("cannot stop node '%v'", n.Name)
 
 }
+
+// ForceStop stops a node forcibly
+func (n *Node) ForceStop() error {
+	err := n.ensureHost()
+	if err != nil {
+		return err
+	}
+
+	if n.Status() == "Running" {
+		err = n.host.ForceStop()
+		if err != nil {
+			return err
+		}
+
+		n.host.WaitForStateChange(5)
+		return nil
+	}
+
+	return fmt.Errorf("cannot stop node '%v'", n.Name)
+
+}

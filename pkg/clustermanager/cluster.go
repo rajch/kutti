@@ -1,6 +1,8 @@
 package clustermanager
 
 import (
+	"fmt"
+
 	"github.com/rajch/kutti/pkg/core"
 )
 
@@ -111,6 +113,11 @@ func (c *Cluster) addnode(nodename string, nodetype string) (*Node, error) {
 	return newnode, err
 }
 
+func (c *Cluster) deletenodeentry(nodename string) error {
+	delete(c.Nodes, nodename)
+	return manager.Save()
+}
+
 func (c *Cluster) deletenode(nodename string) error {
 	err := c.ensureDriver()
 	if err != nil {
@@ -119,8 +126,7 @@ func (c *Cluster) deletenode(nodename string) error {
 
 	err = c.driver.DeleteHost(nodename, c.NetworkName, c.Name)
 	if err == nil {
-		delete(c.Nodes, nodename)
-		err = manager.Save()
+		err = c.deletenodeentry(nodename)
 	}
 
 	return err
@@ -132,7 +138,24 @@ func (c *Cluster) AddUninitializedNode(nodename string) (*Node, error) {
 }
 
 // DeleteNode deletes a node completely
-func (c *Cluster) DeleteNode(nodename string) error {
+func (c *Cluster) DeleteNode(nodename string, force bool) error {
+	n, ok := c.Nodes[nodename]
+	if !ok {
+		return fmt.Errorf("node '%v' not found", nodename)
+	}
+
+	if n.Status() == "Unknown" {
+		return c.deletenodeentry(nodename)
+	}
+
+	if n.Status() == "Running" {
+		if !force {
+			return fmt.Errorf("node '%v' is running. Cannot delete", nodename)
+		}
+
+		n.ForceStop()
+	}
+
 	return c.deletenode(nodename)
 }
 
