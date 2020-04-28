@@ -1,52 +1,40 @@
 package core
 
-// VMDriver describes common VM operations
-type VMDriver interface {
-	Name() string
-	Description() string
-	Status() string
-
-	ListNetworks() ([]VMNetwork, error)
-	CreateNetwork(netname string) (VMNetwork, error)
-	GetNetwork(netname string) (VMNetwork, error)
-	DeleteNetwork(netname string) error
-
-	/*
-		FetchMasterNodeImage() error
-		FetchWorkerNodeImage() error
-	*/
-	ListHosts() ([]VMHost, error)
-	CreateHost(hostname string, networkname string, clustername string, k8sversion string) (VMHost, error)
-	GetHost(hostname string, networkname string, clustername string) (VMHost, error)
-	DeleteHost(hostname string, networkname string, clustername string) error
-}
-
-// type driverregisterfunc func() (VMDriver, error)
-
-// VMNetwork describes a virtual network
-type VMNetwork interface {
-	Name() string
-	NetCIDR() string
-}
-
-// VMHost describes a node
-type VMHost interface {
-	Name() string
-	Status() string
-	SSHAddress() string
-
-	Start() error
-	Stop() error
-	WaitForStateChange(int)
-	ForwardSSHPort(int) error
-}
+var (
+	drivers map[string]VMDriver
+)
 
 // SSHClient defines a simple SSH client
 type SSHClient interface {
 	RunWithResults(address string, command string) (string, error)
 }
 
+// RegisterDriver registers a VMdriver with a name to core.
+// If a driver with the specified name already exists, it is replaced.
+func RegisterDriver(name string, d VMDriver) {
+	if d != nil {
+		drivers[name] = d
+	}
+}
+
+// GetDriver returns a VMDriver corresponding to the name.
+// If there is no driver registered against the name, nil is returned.
+func GetDriver(name string) (VMDriver, bool) {
+	result, ok := drivers[name]
+	return result, ok
+}
+
+// ForEachDriver iterates over VM drivers.
+// The callback function can return false to stop the iteration.
+func ForEachDriver(f func(VMDriver) bool) {
+	for _, driver := range drivers {
+		cancel := f(driver)
+		if cancel {
+			break
+		}
+	}
+}
+
 func init() {
-	//driverfuncs = make(map[string]func() (VMDriver, error))
 	drivers = make(map[string]VMDriver)
 }
