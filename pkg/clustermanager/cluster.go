@@ -67,6 +67,18 @@ func (c *Cluster) createNetwork() error {
 	return nil
 }
 
+func (c *Cluster) deleteNetwork() error {
+	c.ensureDriver()
+	err := c.driver.DeleteNetwork(c.NetworkName)
+	if err != nil {
+		c.status = "NetworkDeleteError"
+		return err
+	}
+	c.network = nil
+	c.status = "NetworkDeleted"
+	return nil
+}
+
 // func (c *Cluster) ensurenodes() {
 // 	for _, node := range c.Nodes {
 // 		node.cluster = c
@@ -108,14 +120,14 @@ func (c *Cluster) addnode(nodename string, nodetype string) (*Node, error) {
 		c.Nodes[nodename] = newnode
 	}
 
-	manager.Save()
+	Save()
 
 	return newnode, err
 }
 
 func (c *Cluster) deletenodeentry(nodename string) error {
 	delete(c.Nodes, nodename)
-	return manager.Save()
+	return Save()
 }
 
 func (c *Cluster) deletenode(nodename string) error {

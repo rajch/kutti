@@ -15,7 +15,7 @@ var clustercreateCmd = &cobra.Command{
 	Aliases:       []string{"add"},
 	Short:         "Create a new cluster",
 	Long:          `Create a new cluster.`,
-	Args:          clustercreateargs,
+	Args:          clusternameonlyargs,
 	Run:           clustercreate,
 	SilenceErrors: true,
 }
@@ -55,7 +55,7 @@ func init() {
 	// clustercreateCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 }
 
-func clustercreateargs(cmd *cobra.Command, args []string) error {
+func clusternameonlyargs(cmd *cobra.Command, args []string) error {
 	if len(args) == 0 {
 		return errors.New("CLUSTERNAME is required")
 	}
