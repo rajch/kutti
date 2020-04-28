@@ -51,9 +51,6 @@ func TestNewCluster(t *testing.T) {
 
 	cluster, _ := clustermanager.GetCluster("testclust1")
 	t.Log(*cluster)
-
-	t.Log("As of now, you will have to remove the cluster artifacts yourself.")
-	t.Log("Remember to remove the VMs, the NAT network, and the DHCP server (VBoxManage dhcpserver remove --netname testcluster1net\n")
 }
 
 func TestAddNewNode(t *testing.T) {
@@ -87,6 +84,27 @@ func TestDeleteNode(t *testing.T) {
 	t.Logf("Cluster:%+v", cluster)
 }
 
+func TestDefaultCluster(t *testing.T) {
+	_, ok := clustermanager.GetCluster("testclust1")
+	if !ok {
+		t.Log("Cluster 'testclust1' not foumd. This test is supposed to run after TestNewCluster.")
+		t.FailNow()
+	}
+
+	clustermanager.ClearDefaultCluster()
+	if clustermanager.DefaultCluster() != nil {
+		t.Log("ClearDefaultCluster did not work.")
+		t.FailNow()
+	}
+
+	clustermanager.SetDefaultCluster("testclust1")
+	if clustermanager.DefaultCluster().Name != "testclust1" {
+		t.Log("SetDefaultCluster did not work.")
+		t.FailNow()
+	}
+
+}
+
 func TestDeleteCluster(t *testing.T) {
 	err := clustermanager.DeleteCluster("testclust1")
 	if err != nil {
@@ -94,4 +112,8 @@ func TestDeleteCluster(t *testing.T) {
 		t.FailNow()
 	}
 
+	if clustermanager.DefaultCluster() != nil {
+		t.Log("DefaultCluster should have been emptied after DeleteCluster. That did not work.")
+		t.FailNow()
+	}
 }

@@ -81,6 +81,11 @@ func DeleteCluster(clustername string) error {
 
 	delete(manager.Clusters, clustername)
 
+	// If this was the deault cluster, clear that
+	if manager.DefaultClusterName == clustername {
+		ClearDefaultCluster()
+	}
+
 	return Save()
 }
 
@@ -104,8 +109,33 @@ func ForEachCluster(f func(*Cluster) bool) {
 
 // DefaultCluster returns the default cluster, or nil if none has been set
 func DefaultCluster() *Cluster {
-	result, _ := manager.Clusters[manager.DefaultClusterName]
+	if manager.DefaultClusterName == "" {
+		return nil
+	}
+
+	result, ok := manager.Clusters[manager.DefaultClusterName]
+	if !ok {
+		ClearDefaultCluster()
+	}
 	return result
+}
+
+// SetDefaultCluster sets the default cluster name.
+// It returns an error if the cluster does not exist.
+func SetDefaultCluster(clustername string) error {
+	_, ok := manager.Clusters[clustername]
+	if !ok {
+		return errClusterDoesNotExist
+	}
+
+	manager.DefaultClusterName = clustername
+	return Save()
+}
+
+// ClearDefaultCluster clears the default cluster name.
+func ClearDefaultCluster() {
+	manager.DefaultClusterName = ""
+	Save()
 }
 
 // ForEachDriver iterates over drivers
