@@ -33,7 +33,7 @@ type VBoxVMDriver struct {
 	status         string
 }
 
-// Name returns the driver idetifier string
+// Name returns the driver identifier string
 func (vd *VBoxVMDriver) Name() string {
 	return driverName
 }

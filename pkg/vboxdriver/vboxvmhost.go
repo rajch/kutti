@@ -85,6 +85,23 @@ func (vh *VBoxVMHost) Stop() error {
 	return nil
 }
 
+// ForceStop stops the VM forcibly
+func (vh *VBoxVMHost) ForceStop() error {
+	_, err := runwithresults(
+		vh.driver.vboxmanagepath,
+		"controlvm",
+		vh.qname(),
+		"poweroff",
+	)
+
+	if err != nil {
+		return fmt.Errorf("Could not force stop the host '%s': %v", vh.name, err)
+	}
+
+	vh.status = "Stopped"
+	return nil
+}
+
 // WaitForStateChange waits the specified number of seconds
 func (vh *VBoxVMHost) WaitForStateChange(timeoutinseconds int) {
 	time.Sleep(time.Duration(timeoutinseconds) * time.Second)

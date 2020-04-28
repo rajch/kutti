@@ -8,6 +8,7 @@ type VMHost interface {
 
 	Start() error
 	Stop() error
+	ForceStop() error
 	WaitForStateChange(int)
 	ForwardSSHPort(int) error
 }
