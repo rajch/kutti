@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
-	"path"
 	"strings"
 
 	"github.com/rajch/kutti/pkg/core"
@@ -274,16 +273,21 @@ func (vd *VBoxVMDriver) CreateHost(hostname string, networkname string, clustern
 		the NAT network.
 	*/
 
-	cachedir, err := core.CacheDir()
+	// cachedir, err := core.CacheDir()
+	// if err != nil {
+	// 	return nil, fmt.Errorf("Could not retrieve CacheDir: %v", err)
+	// }
+
+	// DOING: ovafile hardcoded here. Correcting.
+	// ovafile := path.Join(cachedir, "Krishna-1.0.ova")
+	// ovafile := path.Join(cachedir, "kutti-1.14.ova")
+	ovafile, err := imagepathfromk8sversion(k8sversion)
 	if err != nil {
-		return nil, fmt.Errorf("Could not retrieve CacheDir: %v", err)
+		return nil, err
 	}
 
-	// TODO: ovafile hardcoded here. Correct.
-	// ovafile := path.Join(cachedir, "Krishna-1.0.ova")
-	ovafile := path.Join(cachedir, "kutti-1.14.ova")
 	if _, err = os.Stat(ovafile); err != nil {
-		return nil, fmt.Errorf("Could not retrieve ovafile %s: %v", ovafile, err)
+		return nil, fmt.Errorf("Could not retrieve image %s: %v", ovafile, err)
 	}
 
 	l, err := runwithresults(
@@ -387,6 +391,46 @@ func (vd *VBoxVMDriver) DeleteHost(hostname string, networkname string, clustern
 	}
 
 	return nil
+}
+
+// ListK8sVersions lists the known Kubernetes versions
+func (vd *VBoxVMDriver) ListK8sVersions() ([]string, error) {
+	ensureimagesmap()
+	result := make([]string, len(images))
+
+	i := 0
+	for key := range images {
+		result[i] = key
+		i++
+	}
+
+	return result, nil
+}
+
+// ListImages lists the known VM images
+func (vd *VBoxVMDriver) ListImages() ([]core.VMImage, error) {
+	ensureimagesmap()
+	result := make([]core.VMImage, len(images))
+
+	i := 0
+	for _, image := range images {
+		result[i] = image
+		i++
+	}
+
+	return result, nil
+}
+
+// GetImage returns an image corresponding to a Kubernetes version,
+// OR an error
+func (vd *VBoxVMDriver) GetImage(k8sversion string) (core.VMImage, error) {
+	ensureimagesmap()
+	result, ok := images[k8sversion]
+	if !ok {
+		return nil, fmt.Errorf("no image found for version %v", k8sversion)
+	}
+
+	return result, nil
 }
 
 // New returns a pointer to a new VBoxVMDriver OR an error
