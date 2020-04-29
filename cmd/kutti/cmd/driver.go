@@ -1,6 +1,8 @@
 package cmd
 
 import (
+	"errors"
+
 	"github.com/spf13/cobra"
 )
 
@@ -23,4 +25,17 @@ func init() {
 	// Cobra supports local flags which will only run when this command
 	// is called directly, e.g.:
 	// driverCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+}
+
+func drivernameonlyargs(cmd *cobra.Command, args []string) error {
+	if len(args) == 0 {
+		return errors.New("DRIVERNAME is required")
+	}
+
+	if len(args) > 1 {
+		cmd.SilenceUsage = true
+		return errors.New("only DRIVERNAME is required")
+	}
+
+	return nil
 }
