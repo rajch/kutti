@@ -3,11 +3,9 @@ package clustermanager
 import (
 	"encoding/json"
 	"errors"
-	"io/ioutil"
-	"os"
-	"path"
 	"regexp"
 
+	"github.com/rajch/kutti/internal/pkg/configfilemanager"
 	"github.com/rajch/kutti/pkg/core"
 )
 
@@ -184,16 +182,6 @@ func ForEachImage(drivername string, f func(core.VMImage) bool) error {
 	return nil
 }
 
-func getconfigfilepath() (string, error) {
-	configPath, err := core.ConfigDir()
-	if err != nil {
-		return "", err
-	}
-
-	datafilepath := path.Join(configPath, configFileName)
-	return datafilepath, nil
-}
-
 // Save saves the current state to the configuration file.
 func Save() error {
 	data, err := json.Marshal(manager)
@@ -201,61 +189,34 @@ func Save() error {
 		return err
 	}
 
-	datafilepath, err := getconfigfilepath()
-	if err != nil {
-		return err
-	}
-
-	file, err := os.Create(datafilepath)
-	defer file.Close()
-
-	if err != nil {
-		return err
-	}
-
-	_, err = file.Write(data)
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return configfilemanager.Save(configFileName, data)
 }
 
 // Load loads the cluster configuration from the configuration file
 func Load() error {
-	datafilepath, err := getconfigfilepath()
+	data, notexist, err := configfilemanager.Load(configFileName)
+	if notexist {
+		setdefaultmanagervalue()
+		return Save()
+	}
+
+	var cm clusterManager
+	err = json.Unmarshal(data, &cm)
 	if err != nil {
+		setdefaultmanagervalue()
+		Save()
 		return err
 	}
-	_, err = os.Stat(datafilepath)
-	if !(err == nil || os.IsNotExist(err)) {
-		return err
-	}
 
-	if err == nil {
-		data, err := ioutil.ReadFile(datafilepath)
+	manager = cm
+	return nil
+}
 
-		if err != nil {
-			return err
-		}
-
-		var cm clusterManager
-		err = json.Unmarshal(data, &cm)
-		if err != nil {
-			return err
-		}
-
-		manager = cm
-		return nil
-	}
-
+func setdefaultmanagervalue() {
 	manager = clusterManager{
 		Clusters:           make(map[string]*Cluster),
 		DefaultClusterName: "",
 	}
-
-	return Save()
-
 }
 
 func init() {
