@@ -1,0 +1,34 @@
+package vboxdriver
+
+// VBoxVMImage implements the VMImage interface for VirtualBox
+type VBoxVMImage struct {
+	ImageK8sVersion string
+	ImageChecksum   string
+	ImageStatus     string
+}
+
+// K8sVersion returns the version of Kubernetes present in the image
+func (i *VBoxVMImage) K8sVersion() string {
+	return i.ImageK8sVersion
+}
+
+// Status returns the status of the image
+func (i *VBoxVMImage) Status() string {
+	return i.ImageStatus
+}
+
+// Fetch fetches the image from wherever
+func (i *VBoxVMImage) Fetch() error {
+	panic("not implemented") // TODO: Implement
+}
+
+// FromFile verfies an image file, and if valid, copies it to the cache.
+func (i *VBoxVMImage) FromFile(filepath string) error {
+	err := addfromfile(i.ImageK8sVersion, filepath, i.ImageChecksum)
+	if err != nil {
+		return err
+	}
+
+	i.ImageStatus = "Available"
+	return saveimages()
+}

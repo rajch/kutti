@@ -3,11 +3,9 @@ package clustermanager
 import (
 	"encoding/json"
 	"errors"
-	"io/ioutil"
-	"os"
-	"path"
 	"regexp"
 
+	"github.com/rajch/kutti/internal/pkg/configfilemanager"
 	"github.com/rajch/kutti/pkg/core"
 )
 
@@ -16,6 +14,8 @@ var (
 	errClusterExists       = errors.New("cluster already exists")
 	errClusterDoesNotExist = errors.New("cluster does not exist")
 	errClusterNotEmpty     = errors.New("cluster is not empty")
+	errDriverDoesNotExist  = errors.New("driver does not exist")
+	errImageNotAvailable   = errors.New("image not available")
 	manager                clusterManager
 )
 
@@ -48,9 +48,21 @@ func NewEmptyCluster(name string, k8sversion string, drivername string) error {
 		return errClusterExists
 	}
 
-	// TODO: Validate driver
+	// DOING: Validate driver
+	driver, ok := core.GetDriver(drivername)
+	if !ok {
+		return errDriverDoesNotExist
+	}
 
-	// TODO: Validate k8sversion
+	// DOING: Validate k8sversion
+	driverimage, err := driver.GetImage(k8sversion)
+	if err != nil {
+		return err
+	}
+
+	if driverimage.Status() != "Available" {
+		return errImageNotAvailable
+	}
 
 	newCluster, err := newEmptyCluster(name, k8sversion, drivername)
 	if err != nil {
@@ -138,19 +150,36 @@ func ClearDefaultCluster() {
 	Save()
 }
 
+// GetDriver gets the specified driver OR an error
+func GetDriver(drivername string) (core.VMDriver, bool) {
+	return core.GetDriver(drivername)
+}
+
 // ForEachDriver iterates over drivers
 func ForEachDriver(f func(core.VMDriver) bool) {
 	core.ForEachDriver(f)
 }
 
-func getconfigfilepath() (string, error) {
-	configPath, err := core.ConfigDir()
-	if err != nil {
-		return "", err
+// ForEachImage iterates over images for the specified driver
+func ForEachImage(drivername string, f func(core.VMImage) bool) error {
+	driver, ok := core.GetDriver(drivername)
+	if !ok {
+		return errDriverDoesNotExist
 	}
 
-	datafilepath := path.Join(configPath, configFileName)
-	return datafilepath, nil
+	images, err := driver.ListImages()
+	if err != nil {
+		return err
+	}
+
+	for _, value := range images {
+		cancel := f(value)
+		if cancel {
+			break
+		}
+	}
+
+	return nil
 }
 
 // Save saves the current state to the configuration file.
@@ -160,61 +189,34 @@ func Save() error {
 		return err
 	}
 
-	datafilepath, err := getconfigfilepath()
-	if err != nil {
-		return err
-	}
-
-	file, err := os.Create(datafilepath)
-	defer file.Close()
-
-	if err != nil {
-		return err
-	}
-
-	_, err = file.Write(data)
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return configfilemanager.Save(configFileName, data)
 }
 
 // Load loads the cluster configuration from the configuration file
 func Load() error {
-	datafilepath, err := getconfigfilepath()
+	data, notexist, err := configfilemanager.Load(configFileName)
+	if notexist {
+		setdefaultmanagervalue()
+		return Save()
+	}
+
+	var cm clusterManager
+	err = json.Unmarshal(data, &cm)
 	if err != nil {
+		setdefaultmanagervalue()
+		Save()
 		return err
 	}
-	_, err = os.Stat(datafilepath)
-	if !(err == nil || os.IsNotExist(err)) {
-		return err
-	}
 
-	if err == nil {
-		data, err := ioutil.ReadFile(datafilepath)
+	manager = cm
+	return nil
+}
 
-		if err != nil {
-			return err
-		}
-
-		var cm clusterManager
-		err = json.Unmarshal(data, &cm)
-		if err != nil {
-			return err
-		}
-
-		manager = cm
-		return nil
-	}
-
+func setdefaultmanagervalue() {
 	manager = clusterManager{
 		Clusters:           make(map[string]*Cluster),
 		DefaultClusterName: "",
 	}
-
-	return Save()
-
 }
 
 func init() {
