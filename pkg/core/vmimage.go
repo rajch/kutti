@@ -6,6 +6,5 @@ type VMImage interface {
 	Status() string
 
 	Fetch() error
-	Verify() bool
 	FromFile(string) error
 }

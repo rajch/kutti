@@ -9,9 +9,17 @@ type SSHClient interface {
 	RunWithResults(address string, command string) (string, error)
 }
 
+func ensuredrivers() {
+	if drivers == nil {
+		drivers = make(map[string]VMDriver)
+	}
+}
+
 // RegisterDriver registers a VMdriver with a name to core.
 // If a driver with the specified name already exists, it is replaced.
 func RegisterDriver(name string, d VMDriver) {
+	ensuredrivers()
+
 	if d != nil {
 		drivers[name] = d
 	}
@@ -36,5 +44,5 @@ func ForEachDriver(f func(VMDriver) bool) {
 }
 
 func init() {
-	drivers = make(map[string]VMDriver)
+	ensuredrivers()
 }

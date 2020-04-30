@@ -16,14 +16,14 @@ const imagesConfigFile = "vboximages.json"
 
 var images map[string]*VBoxVMImage
 
-func ensureimagesmap() {
+func ensureimages() {
 	if images == nil {
 		loadimages()
 	}
 }
 
 func saveimages() error {
-	ensureimagesmap()
+	ensureimages()
 
 	data, err := json.Marshal(images)
 	if err != nil {
