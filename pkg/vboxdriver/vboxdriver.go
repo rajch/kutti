@@ -327,12 +327,19 @@ func (vd *VBoxVMDriver) CreateHost(hostname string, networkname string, clustern
 	}
 	//newhost.status = "NetworkAttached"
 
+	// Start the host
+	err = newhost.Start()
+	if err != nil {
+		return newhost, err
+	}
+	newhost.WaitForStateChange(25)
+
+	// Change the name
+	err = newhost.renamehost(hostname)
+	if err != nil {
+		return newhost, err
+	}
 	/*
-		// Start the host
-		err = newhost.Start()
-		if err != nil {
-			return newhost, err
-		}
 		newhost.status = "Started"
 
 		// Forward the SSH port
@@ -341,6 +348,8 @@ func (vd *VBoxVMDriver) CreateHost(hostname string, networkname string, clustern
 			return newhost, err
 		}
 	*/
+	newhost.Stop()
+
 	newhost.status = "Stopped"
 
 	return newhost, nil

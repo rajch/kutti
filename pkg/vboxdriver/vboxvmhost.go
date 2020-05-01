@@ -4,13 +4,15 @@ import (
 	"fmt"
 	"regexp"
 	"strings"
-	"time"
 )
 
 const (
 	propSSHRule       = "/kutti/VMInfo/SSHForwardingRule"
 	propIPAddress     = "/VirtualBox/GuestInfo/Net/0/V4/IP"
 	propLoggedInUsers = "/VirtualBox/GuestInfo/OS/LoggedInUsers"
+
+	vboxUsername = "kuttiadmin"
+	vboxPassword = "Pass@word1"
 )
 
 // VBoxVMHost implements the VMHost interface for VirtualBox
@@ -104,7 +106,8 @@ func (vh *VBoxVMHost) ForceStop() error {
 
 // WaitForStateChange waits the specified number of seconds
 func (vh *VBoxVMHost) WaitForStateChange(timeoutinseconds int) {
-	time.Sleep(time.Duration(timeoutinseconds) * time.Second)
+	vh.vboxwaitforstatechange(timeoutinseconds)
+	// time.Sleep(time.Duration(timeoutinseconds) * time.Second)
 }
 
 // ForwardSSHPort forwards the SSH port of this host to the specified host port
@@ -299,4 +302,54 @@ func (vh *VBoxVMHost) parseProps(propstr string) {
 	// for i := 0; i < len(results); i++ {
 	// 	fmt.Printf("Name: %v, Value:%v\n", results[i][1], results[i][2])
 	// }
+}
+
+func (vh *VBoxVMHost) runwithresults(execpath string, paramarray ...string) (string, error) {
+	params := []string{
+
+		"guestcontrol",
+		vh.qname(),
+		"--username",
+		vboxUsername,
+		"--password",
+		vboxPassword,
+		"run",
+		"--",
+		execpath,
+	}
+	params = append(params, paramarray...)
+
+	output, err := runwithresults(
+		vh.driver.vboxmanagepath,
+		params...,
+	)
+
+	return output, err
+}
+
+func (vh *VBoxVMHost) renamehost(newname string) error {
+	execname := fmt.Sprintf("/home/%s/rw-installscripts/set-hostname.sh", vboxUsername)
+
+	_, err := vh.runwithresults(
+		"/usr/bin/sudo",
+		execname,
+		newname,
+	)
+
+	return err
+}
+
+func (vh *VBoxVMHost) vboxwaitforstatechange(timeoutinseconds int) error {
+	_, err := runwithresults(
+		vh.driver.vboxmanagepath,
+		"guestproperty",
+		"wait",
+		vh.qname(),
+		propLoggedInUsers,
+		"--timeout",
+		fmt.Sprintf("%v", timeoutinseconds*1000),
+		"--fail-on-timeout",
+	)
+
+	return err
 }
