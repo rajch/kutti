@@ -2,7 +2,8 @@ package cmd
 
 import (
 	"errors"
-	"fmt"
+
+	"github.com/rajch/kutti/internal/pkg/kuttilog"
 
 	"github.com/rajch/kutti/pkg/clustermanager"
 	_ "github.com/rajch/kutti/pkg/vboxdriver" // Virtual Box driver
@@ -79,6 +80,7 @@ func clustercreate(cmd *cobra.Command, args []string) {
 	var err error
 
 	if unmanaged {
+		kuttilog.Printf(2, "Creating cluster '%s'...\n", clustername)
 		err = clustermanager.NewEmptyCluster(
 			clustername,
 			k8sversion,
@@ -89,6 +91,14 @@ func clustercreate(cmd *cobra.Command, args []string) {
 	}
 
 	if err != nil {
-		fmt.Printf("Could not create cluster %s: %v.\n", clustername, err)
+		kuttilog.Printf(0, "Error: Could not create cluster %s: %v.\n", clustername, err)
+		return
 	}
+
+	if kuttilog.V(1) {
+		kuttilog.Printf(1, "Cluster '%s' created.\n", clustername)
+	} else {
+		kuttilog.Print(0, clustername)
+	}
+
 }

@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/rajch/kutti/internal/pkg/kuttilog"
+
 	"github.com/spf13/cobra"
 )
 
@@ -17,6 +19,7 @@ var rootCmd = &cobra.Command{
 	// Uncomment the following line if your bare application
 	// has an action associated with it:
 	//	Run: func(cmd *cobra.Command, args []string) { },
+	PersistentPreRun: setverbosity,
 }
 
 // Execute adds all child commands to the root command and sets flags appropriately.
@@ -36,6 +39,7 @@ func init() {
 	// will be global for your application.
 
 	//rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.kutti.yaml)")
+	rootCmd.PersistentFlags().BoolP("quiet", "q", false, "quiet output")
 }
 
 // initConfig reads in config file and ENV variables if set.
@@ -63,3 +67,11 @@ func init() {
 // 		fmt.Println("Using config file:", viper.ConfigFileUsed())
 // 	}
 // }
+
+func setverbosity(cmd *cobra.Command, args []string) {
+	quiet, _ := cmd.Flags().GetBool("quiet")
+	if quiet {
+		kuttilog.Setloglevel(0)
+	}
+	kuttilog.SetPrefix("")
+}

@@ -15,8 +15,13 @@ limitations under the License.
 */
 package main
 
-import "github.com/rajch/kutti/cmd/kutti/cmd"
+import (
+	"log"
+
+	"github.com/rajch/kutti/cmd/kutti/cmd"
+)
 
 func main() {
+	log.SetPrefix("kutti")
 	cmd.Execute()
 }

@@ -1,6 +1,9 @@
 package clustermanager
 
-import "github.com/rajch/kutti/pkg/core"
+import (
+	klog "github.com/rajch/kutti/internal/pkg/kuttilog"
+	"github.com/rajch/kutti/pkg/core"
+)
 
 func newEmptyCluster(name string, k8sversion string, drivername string) (*Cluster, error) {
 	newCluster := &Cluster{
@@ -9,7 +12,7 @@ func newEmptyCluster(name string, k8sversion string, drivername string) (*Cluste
 		DriverName: drivername,
 		//hosts:      make(map[string]core.VMHost),
 		Nodes:  make(map[string]*Node),
-		status: "UnInitialzed",
+		status: "UnInitialized",
 	}
 
 	// Ensure presence of VMdriver
@@ -19,6 +22,7 @@ func newEmptyCluster(name string, k8sversion string, drivername string) (*Cluste
 	}
 
 	// Create VM Network
+	klog.Println(2, "Creating network...")
 	err = newCluster.createNetwork()
 	if err != nil {
 		return newCluster, err
@@ -26,6 +30,8 @@ func newEmptyCluster(name string, k8sversion string, drivername string) (*Cluste
 
 	newCluster.Type = "Unmanaged"
 	newCluster.status = "Ready"
+	klog.Println(2, "Network created.")
+
 	return newCluster, nil
 
 }
