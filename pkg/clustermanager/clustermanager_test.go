@@ -6,6 +6,7 @@ import (
 	"os"
 	"path"
 	"testing"
+	"time"
 
 	"github.com/rajch/kutti/pkg/clustermanager"
 	"github.com/rajch/kutti/pkg/core"
@@ -43,7 +44,7 @@ func TestDrivers(t *testing.T) {
 }
 
 func TestNewCluster(t *testing.T) {
-	err := clustermanager.NewEmptyCluster("testclust1", "1.17", "vbox")
+	err := clustermanager.NewEmptyCluster("testclust1", "1.14", "vbox")
 	if err != nil {
 		t.Logf("NewEmptyCluster failed with error:%v", err)
 		t.FailNow()
@@ -67,6 +68,8 @@ func TestAddNewNode(t *testing.T) {
 
 	t.Logf("Node:%+v", node)
 	t.Logf("Cluster:%+v", cluster)
+	t.Log("Waiting 10 seconds...")
+	time.Sleep(time.Duration(10) * time.Second)
 }
 
 func TestDeleteNode(t *testing.T) {

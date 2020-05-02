@@ -1,8 +1,6 @@
 package clustermanager
 
 import (
-	"fmt"
-
 	"github.com/rajch/kutti/pkg/core"
 )
 
@@ -20,14 +18,14 @@ type Node struct {
 func (n *Node) Cluster() *Cluster {
 	//fmt.Printf("BEFORE: Node:%+v]\n", n)
 	if n.cluster == nil {
-		n.cluster = manager.Clusters[n.ClusterName]
+		n.cluster = config.Clusters[n.ClusterName]
 		n.cluster.ensureDriver()
 	}
 	//fmt.Printf("AFTER: Node:%+v]\n", n)
 	return n.cluster
 }
 
-func (n *Node) createHost() error {
+func (n *Node) createhost() error {
 	c := n.Cluster()
 	host, err := c.driver.CreateHost(n.Name, c.NetworkName, c.Name, c.K8sVersion)
 	if err != nil {
@@ -38,7 +36,7 @@ func (n *Node) createHost() error {
 	return nil
 }
 
-func (n *Node) ensureHost() error {
+func (n *Node) ensurehost() error {
 	if n.host == nil {
 		c := n.Cluster()
 		host, err := c.driver.GetHost(n.Name, c.NetworkName, c.Name)
@@ -53,7 +51,7 @@ func (n *Node) ensureHost() error {
 
 // Status returns the current node status
 func (n *Node) Status() string {
-	err := n.ensureHost()
+	err := n.ensurehost()
 	if err != nil {
 		return "Unknown"
 	}
@@ -63,7 +61,7 @@ func (n *Node) Status() string {
 
 // Start starts a node
 func (n *Node) Start() error {
-	err := n.ensureHost()
+	err := n.ensurehost()
 	if err != nil {
 		return err
 	}
@@ -72,13 +70,13 @@ func (n *Node) Start() error {
 		return n.host.Start()
 	}
 
-	return fmt.Errorf("cannot start node '%v'", n.Name)
+	return errNodeCannotStart
 
 }
 
 // Stop starts a node
 func (n *Node) Stop() error {
-	err := n.ensureHost()
+	err := n.ensurehost()
 	if err != nil {
 		return err
 	}
@@ -87,13 +85,13 @@ func (n *Node) Stop() error {
 		return n.host.Stop()
 	}
 
-	return fmt.Errorf("cannot stop node '%v'", n.Name)
+	return errNodeCannotStop
 
 }
 
 // ForceStop stops a node forcibly
 func (n *Node) ForceStop() error {
-	err := n.ensureHost()
+	err := n.ensurehost()
 	if err != nil {
 		return err
 	}
@@ -104,10 +102,10 @@ func (n *Node) ForceStop() error {
 			return err
 		}
 
-		n.host.WaitForStateChange(5)
+		// TODO: Consider moving this wait, or standardize the duration
+		n.host.WaitForStateChange(25)
 		return nil
 	}
 
-	return fmt.Errorf("cannot stop node '%v'", n.Name)
-
+	return errNodeCannotStop
 }

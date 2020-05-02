@@ -1,8 +1,6 @@
 package clustermanager
 
 import (
-	"fmt"
-
 	"github.com/rajch/kutti/pkg/core"
 )
 
@@ -25,15 +23,14 @@ type Cluster struct {
 }
 
 func (c *Cluster) ensureDriver() error {
-	var err error = nil
-	var ok bool
 	if c.driver == nil {
-		c.driver, ok = core.GetDriver(c.DriverName)
+		driver, ok := core.GetDriver(c.DriverName)
 		if !ok {
 			c.status = "DriverNotPresent"
-			return err
+			return errDriverDoesNotExist
 		}
 
+		c.driver = driver
 		c.status = "Driver" + c.driver.Status()
 	}
 
@@ -41,14 +38,13 @@ func (c *Cluster) ensureDriver() error {
 }
 
 func (c *Cluster) ensureNetwork() error {
-	var err error
 	if c.network == nil {
-		c.network, err = c.driver.GetNetwork(c.NetworkName)
+		network, err := c.driver.GetNetwork(c.NetworkName)
 		if err != nil {
 			c.status = "NetworkError"
 			return err
 		}
-
+		c.network = network
 		c.status = "NetworkReady"
 	}
 
@@ -79,29 +75,6 @@ func (c *Cluster) deleteNetwork() error {
 	return nil
 }
 
-// func (c *Cluster) ensurenodes() {
-// 	for _, node := range c.Nodes {
-// 		node.cluster = c
-// 	}
-// }
-
-// func (c *Cluster) ensureHosts() error {
-// 	if len(c.hosts) == 0 {
-// 		for _, node := range c.Nodes {
-// 			host, err := c.driver.GetHost(node.Name, c.NetworkName)
-// 			if err != nil {
-// 				node.status = "ERROR:" + err.Error()
-// 			} else {
-// 				node.status = host.Status()
-// 			}
-// 		}
-// 	}
-
-// 	c.status = "Ready"
-
-// 	return nil
-// }
-
 func (c *Cluster) addnode(nodename string, nodetype string) (*Node, error) {
 	err := c.ensureDriver()
 	if err != nil {
@@ -115,7 +88,7 @@ func (c *Cluster) addnode(nodename string, nodetype string) (*Node, error) {
 		Type:        nodetype,
 	}
 
-	err = newnode.createHost()
+	err = newnode.createhost()
 	if err == nil {
 		c.Nodes[nodename] = newnode
 	}
@@ -146,6 +119,10 @@ func (c *Cluster) deletenode(nodename string) error {
 
 // AddUninitializedNode adds a node, but does not start it or join it to the cluster
 func (c *Cluster) AddUninitializedNode(nodename string) (*Node, error) {
+	if !IsValidName(nodename) {
+		return nil, errInvalidName
+	}
+
 	return c.addnode(nodename, "Unmanaged")
 }
 
@@ -153,7 +130,7 @@ func (c *Cluster) AddUninitializedNode(nodename string) (*Node, error) {
 func (c *Cluster) DeleteNode(nodename string, force bool) error {
 	n, ok := c.Nodes[nodename]
 	if !ok {
-		return fmt.Errorf("node '%v' not found", nodename)
+		return errNodeNotFound
 	}
 
 	if n.Status() == "Unknown" {
@@ -162,41 +139,11 @@ func (c *Cluster) DeleteNode(nodename string, force bool) error {
 
 	if n.Status() == "Running" {
 		if !force {
-			return fmt.Errorf("node '%v' is running. Cannot delete", nodename)
+			return errNodeIsRunning
 		}
 
 		n.ForceStop()
 	}
 
 	return c.deletenode(nodename)
-}
-
-func newEmptyCluster(name string, k8sversion string, drivername string) (*Cluster, error) {
-	newCluster := &Cluster{
-		Name:       name,
-		K8sVersion: k8sversion,
-		DriverName: drivername,
-		//hosts:      make(map[string]core.VMHost),
-		Nodes:  make(map[string]*Node),
-		status: "UnInitialzed",
-	}
-
-	// Ensure presence of VMdriver
-	err := newCluster.ensureDriver()
-	if err != nil {
-		return newCluster, err
-	}
-
-	// Create VM Network
-	err = newCluster.createNetwork()
-	if err != nil {
-		return newCluster, err
-	}
-
-	// TODO: Ensure readiness of k8sversion
-
-	newCluster.Type = "Unmanaged"
-	newCluster.status = "Ready"
-	return newCluster, nil
-
 }
