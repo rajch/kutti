@@ -17,11 +17,11 @@ const (
 
 var (
 	// DefaultNetCIDR is the address range used by virtual networks
-	DefaultNetCIDR = "10.0.3.0/24"
+	DefaultNetCIDR = "192.168.125.0/24"
 
-	dhcpaddress       = "10.0.3.3"
+	dhcpaddress       = "192.168.125.3"
 	dhcpnetmask       = "255.255.255.0"
-	ipNetAddr         = "10.0.3"
+	ipNetAddr         = "192.168.125"
 	iphostbase        = 10
 	forwardedPortBase = 10000
 )
