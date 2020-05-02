@@ -472,20 +472,6 @@ func New() (*VBoxVMDriver, error) {
 	return result, nil
 }
 
-func findvboxmanage() (path string, err error) {
-
-	// First, try looking it up on the path
-	path, err = exec.LookPath("VBoxManage")
-	if err == nil {
-		return
-	}
-
-	// TODO: Then try looking in well-known places
-
-	// Give up
-	return
-}
-
 func runwithresults(execpath string, paramarray ...string) (result string, err error) {
 	cmd := exec.Command(execpath, paramarray...)
 	output, err := cmd.CombinedOutput()

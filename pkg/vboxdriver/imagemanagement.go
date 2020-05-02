@@ -36,13 +36,13 @@ func saveimages() error {
 func loadimages() error {
 	data, notexist, err := configfilemanager.Load(imagesConfigFile)
 	if notexist {
-		images = make(map[string]*VBoxVMImage)
+		images = defaultimages()
 		return nil
 	}
 
 	err = json.Unmarshal(data, &images)
 	if err != nil {
-		images = make(map[string]*VBoxVMImage)
+		images = defaultimages()
 		return err
 	}
 

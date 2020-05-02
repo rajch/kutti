@@ -27,6 +27,12 @@ out/kutti: cmd/kutti/main.go cmd/kutti/cmd/*.go pkg/clustermanager/*.go pkg/vbox
 .PHONY: kutticmd
 kutticmd: out/kutti
 
+out/kutti.exe: cmd/kutti/main.go cmd/kutti/cmd/*.go pkg/clustermanager/*.go pkg/vboxdriver/*.go pkg/core/*.go
+	CGO_ENABLED=0 GOOS=windows go build -o $@ $<
+
+.PHONY: kutticmd-windows
+kutticmd-windows: out/kutti.exe
+
 .PHONY: clean
 clean:
 	rm -rf out/*
