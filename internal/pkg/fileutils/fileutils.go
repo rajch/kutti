@@ -4,6 +4,7 @@ import (
 	"crypto/sha256"
 	"fmt"
 	"io"
+	"net/http"
 	"os"
 )
 
@@ -70,4 +71,39 @@ func CopyFile(sourcepath string, destpath string, buffersize int64, overwrite bo
 		}
 	}
 	return err
+}
+
+// DownloadFile downloads a file from a url.
+func DownloadFile(url string, filepath string) error {
+	// Get the data
+	resp, err := http.Get(url)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		return fmt.Errorf("%s", resp.Status)
+	}
+
+	tmpfilepath := filepath + ".download"
+	out, err := os.Create(tmpfilepath)
+	if err != nil {
+		return err
+	}
+
+	if _, err = io.Copy(out, resp.Body); err != nil {
+		out.Close()
+		return err
+	}
+
+	err = out.Close()
+	if err != nil {
+		return err
+	}
+
+	if err = os.Rename(tmpfilepath, filepath); err != nil {
+		return err
+	}
+	return nil
 }
