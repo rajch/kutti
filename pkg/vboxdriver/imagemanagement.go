@@ -78,7 +78,7 @@ func addfromfile(k8sversion string, filepath string, checksum string) error {
 		return err
 	}
 
-	err = fileutils.CopyFile(filepath, localfilepath, 1000)
+	err = fileutils.CopyFile(filepath, localfilepath, 1000, true)
 	if err != nil {
 		return err
 	}

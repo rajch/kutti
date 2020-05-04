@@ -25,7 +25,7 @@ func ChecksumFile(filepath string) (string, error) {
 }
 
 // CopyFile copies a file
-func CopyFile(sourcepath string, destpath string, buffersize int64) error {
+func CopyFile(sourcepath string, destpath string, buffersize int64, overwrite bool) error {
 
 	sourceFileStat, err := os.Stat(sourcepath)
 	if err != nil {
@@ -42,9 +42,11 @@ func CopyFile(sourcepath string, destpath string, buffersize int64) error {
 	}
 	defer source.Close()
 
-	_, err = os.Stat(destpath)
-	if err == nil {
-		return fmt.Errorf("file %s already exists", destpath)
+	if !overwrite {
+		_, err = os.Stat(destpath)
+		if err == nil {
+			return fmt.Errorf("file %s already exists", destpath)
+		}
 	}
 
 	destination, err := os.Create(destpath)
