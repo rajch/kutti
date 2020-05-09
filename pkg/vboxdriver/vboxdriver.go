@@ -7,6 +7,8 @@ import (
 	"os/exec"
 	"strings"
 
+	"github.com/rajch/kutti/internal/pkg/kuttilog"
+
 	"github.com/rajch/kutti/pkg/core"
 )
 
@@ -473,12 +475,26 @@ func New() (*VBoxVMDriver, error) {
 }
 
 func runwithresults(execpath string, paramarray ...string) (result string, err error) {
+	if kuttilog.V(4) {
+		kuttilog.Println(4, "[DEBUG]------------------")
+		kuttilog.Println(4, "[DEBUG]Executing command:")
+		kuttilog.Println(4, execpath, strings.Join(paramarray, " "))
+		kuttilog.Println(4, "[DEBUG]")
+	}
 	cmd := exec.Command(execpath, paramarray...)
 	output, err := cmd.CombinedOutput()
 	/*if err != nil {
 		err = fmt.Errorf("%v(%v)", string(cmd.Stderr))
 		return
 	}*/
+	if kuttilog.V(4) {
+		kuttilog.Println(4, "[DEBUG]Execution results:")
+		kuttilog.Println(4, string(output))
+		if err != nil {
+			kuttilog.Printf(4, "Error: %v\n", err)
+		}
+		kuttilog.Println(4, "[DEBUG]==================")
+	}
 
 	result = string(output)
 	return

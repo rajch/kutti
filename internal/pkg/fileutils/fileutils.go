@@ -6,6 +6,8 @@ import (
 	"io"
 	"net/http"
 	"os"
+
+	"github.com/rajch/kutti/internal/pkg/kuttilog"
 )
 
 // ChecksumFile calculates an SHA256 checksum of a file
@@ -56,6 +58,11 @@ func CopyFile(sourcepath string, destpath string, buffersize int64, overwrite bo
 	}
 	defer destination.Close()
 
+	// Debug log output
+	if kuttilog.V(4) {
+		kuttilog.Printf(4, "Copying %s to %s:\n", sourcepath, destpath)
+	}
+
 	buf := make([]byte, buffersize)
 	for {
 		n, err := source.Read(buf)
@@ -69,7 +76,16 @@ func CopyFile(sourcepath string, destpath string, buffersize int64, overwrite bo
 		if _, err := destination.Write(buf[:n]); err != nil {
 			return err
 		}
+
+		if kuttilog.V(4) {
+			kuttilog.Print(4, ".")
+		}
 	}
+
+	if kuttilog.V(4) {
+		kuttilog.Println(4, ".")
+	}
+
 	return err
 }
 

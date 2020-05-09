@@ -40,6 +40,7 @@ func init() {
 
 	//rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.kutti.yaml)")
 	rootCmd.PersistentFlags().BoolP("quiet", "q", false, "quiet output")
+	rootCmd.PersistentFlags().Bool("debug", false, "debug output")
 }
 
 // initConfig reads in config file and ENV variables if set.
@@ -69,9 +70,15 @@ func init() {
 // }
 
 func setverbosity(cmd *cobra.Command, args []string) {
-	quiet, _ := cmd.Flags().GetBool("quiet")
-	if quiet {
-		kuttilog.Setloglevel(0)
+	debug, _ := cmd.Flags().GetBool("debug")
+	if debug {
+		kuttilog.Setloglevel(4)
+	} else {
+		quiet, _ := cmd.Flags().GetBool("quiet")
+		if quiet {
+			kuttilog.Setloglevel(0)
+		}
 	}
+
 	kuttilog.SetPrefix("")
 }
