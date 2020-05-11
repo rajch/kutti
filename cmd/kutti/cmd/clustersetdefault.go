@@ -1,9 +1,8 @@
 package cmd
 
 import (
-	"fmt"
-
-	"github.com/rajch/kutti/pkg/clustermanager"
+	"github.com/rajch/kutti/cmd/kutti/defaults"
+	"github.com/rajch/kutti/internal/pkg/kuttilog"
 	"github.com/spf13/cobra"
 )
 
@@ -33,10 +32,8 @@ func init() {
 
 func clustersetdefault(cmd *cobra.Command, args []string) {
 	clustername := args[0]
-	err := clustermanager.SetDefaultCluster(clustername)
-	if err != nil {
-		fmt.Printf("Error: Could not set default cluster to '%s':%v.\n", clustername, err)
-	} else {
-		fmt.Println(clustername)
-	}
+	defaults.Setdefault("cluster", clustername)
+	kuttilog.Print(2, "Default cluster set to: ")
+	kuttilog.Println(0, clustername)
+
 }

@@ -1,9 +1,8 @@
 package cmd
 
 import (
-	"fmt"
-
-	"github.com/rajch/kutti/pkg/clustermanager"
+	"github.com/rajch/kutti/cmd/kutti/defaults"
+	"github.com/rajch/kutti/internal/pkg/kuttilog"
 	"github.com/spf13/cobra"
 )
 
@@ -31,6 +30,8 @@ func init() {
 }
 
 func clustercleardefault(cmd *cobra.Command, args []string) {
-	clustermanager.ClearDefaultCluster()
-	fmt.Println("Default cluster cleared.")
+	// clustermanager.ClearDefaultCluster()
+	// fmt.Println("Default cluster cleared.")
+	defaults.Setdefault("cluster", "")
+	kuttilog.Println(2, "Default cluster cleared.")
 }

@@ -6,6 +6,8 @@ import (
 
 	"github.com/rajch/kutti/pkg/clustermanager"
 	"github.com/spf13/cobra"
+
+	"github.com/rajch/kutti/cmd/kutti/defaults"
 )
 
 // nodeCmd represents the node command
@@ -36,19 +38,20 @@ func getCluster(cmd *cobra.Command) (*clustermanager.Cluster, error) {
 	clustername, _ := cmd.Flags().GetString("cluster")
 
 	if clustername == "" {
-		cluster = clustermanager.DefaultCluster()
-		if cluster == nil {
-			return nil,
-				fmt.Errorf("no cluster specified and default cluster not set. Use --cluster, or select a default cluster using 'kutti cluster setdefault'")
+		clustername = defaults.Getdefault("cluster")
+	}
 
-		}
-	} else {
-		cluster, _ = clustermanager.GetCluster(clustername)
-		if cluster == nil {
-			return nil,
-				fmt.Errorf("cluster '%v' not found", clustername)
+	if clustername == "" {
+		return nil,
+			fmt.Errorf("no cluster specified and default cluster not set. Use --cluster, or select a default cluster using 'kutti cluster setdefault'")
 
-		}
+	}
+
+	cluster, _ = clustermanager.GetCluster(clustername)
+	if cluster == nil {
+		return nil,
+			fmt.Errorf("cluster '%v' not found", clustername)
+
 	}
 
 	return cluster, nil
