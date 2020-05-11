@@ -26,12 +26,12 @@ func Save() error {
 		return err
 	}
 
-	return configfilemanager.Save(configFileName, data)
+	return configfilemanager.SaveConfigfile(configFileName, data)
 }
 
 // Load loads the cluster configuration from the configuration file
 func Load() error {
-	data, notexist, err := configfilemanager.Load(configFileName)
+	data, notexist, err := configfilemanager.LoadConfigfile(configFileName)
 	if notexist {
 		setdefaultmanagervalue()
 		return Save()

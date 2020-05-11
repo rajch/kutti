@@ -30,11 +30,11 @@ func saveimages() error {
 		return err
 	}
 
-	return configfilemanager.Save(imagesConfigFile, data)
+	return configfilemanager.SaveConfigfile(imagesConfigFile, data)
 }
 
 func loadimages() error {
-	data, notexist, err := configfilemanager.Load(imagesConfigFile)
+	data, notexist, err := configfilemanager.LoadConfigfile(imagesConfigFile)
 	if notexist {
 		images = defaultimages()
 		return nil
