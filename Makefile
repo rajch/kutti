@@ -22,6 +22,7 @@ localprovisioner-image: out/kutti-localprovisioner build/package/kutti-localprov
 
 KUTTICMDFILES = cmd/kutti/main.go \
 				cmd/kutti/cmd/*.go \
+				cmd/kutti/defaults/*.go \
 				pkg/clustermanager/*.go \
 				pkg/vboxdriver/*.go \
 				pkg/core/*.go \
