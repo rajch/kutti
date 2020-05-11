@@ -105,9 +105,9 @@ func DeleteCluster(clustername string) error {
 	delete(config.Clusters, clustername)
 
 	// If this was the deault cluster, clear that
-	if config.DefaultClusterName == clustername {
-		ClearDefaultCluster()
-	}
+	//if config.DefaultClusterName == clustername {
+	//	ClearDefaultCluster()
+	//}
 
 	return Save()
 }

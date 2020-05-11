@@ -7,8 +7,8 @@ import (
 )
 
 type clusterManagerConfig struct {
-	Clusters           map[string]*Cluster
-	DefaultClusterName string
+	Clusters map[string]*Cluster
+	// DefaultClusterName string
 }
 
 var (
@@ -51,8 +51,8 @@ func Load() error {
 
 func setdefaultmanagervalue() {
 	config = clusterManagerConfig{
-		Clusters:           make(map[string]*Cluster),
-		DefaultClusterName: "",
+		Clusters: make(map[string]*Cluster),
+		//DefaultClusterName: "",
 	}
 }
 

@@ -87,26 +87,26 @@ func TestDeleteNode(t *testing.T) {
 	t.Logf("Cluster:%+v", cluster)
 }
 
-func TestDefaultCluster(t *testing.T) {
-	_, ok := clustermanager.GetCluster("testclust1")
-	if !ok {
-		t.Log("Cluster 'testclust1' not foumd. This test is supposed to run after TestNewCluster.")
-		t.FailNow()
-	}
+// func TestDefaultCluster(t *testing.T) {
+// 	_, ok := clustermanager.GetCluster("testclust1")
+// 	if !ok {
+// 		t.Log("Cluster 'testclust1' not foumd. This test is supposed to run after TestNewCluster.")
+// 		t.FailNow()
+// 	}
 
-	clustermanager.ClearDefaultCluster()
-	if clustermanager.DefaultCluster() != nil {
-		t.Log("ClearDefaultCluster did not work.")
-		t.FailNow()
-	}
+// 	clustermanager.ClearDefaultCluster()
+// 	if clustermanager.DefaultCluster() != nil {
+// 		t.Log("ClearDefaultCluster did not work.")
+// 		t.FailNow()
+// 	}
 
-	clustermanager.SetDefaultCluster("testclust1")
-	if clustermanager.DefaultCluster().Name != "testclust1" {
-		t.Log("SetDefaultCluster did not work.")
-		t.FailNow()
-	}
+// 	clustermanager.SetDefaultCluster("testclust1")
+// 	if clustermanager.DefaultCluster().Name != "testclust1" {
+// 		t.Log("SetDefaultCluster did not work.")
+// 		t.FailNow()
+// 	}
 
-}
+// }
 
 func TestDeleteCluster(t *testing.T) {
 	err := clustermanager.DeleteCluster("testclust1")
@@ -115,8 +115,8 @@ func TestDeleteCluster(t *testing.T) {
 		t.FailNow()
 	}
 
-	if clustermanager.DefaultCluster() != nil {
-		t.Log("DefaultCluster should have been emptied after DeleteCluster. That did not work.")
-		t.FailNow()
-	}
+	// if clustermanager.DefaultCluster() != nil {
+	// 	t.Log("DefaultCluster should have been emptied after DeleteCluster. That did not work.")
+	// 	t.FailNow()
+	// }
 }
