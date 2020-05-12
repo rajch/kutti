@@ -351,6 +351,7 @@ func (vd *VBoxVMDriver) CreateHost(hostname string, networkname string, clustern
 		}
 	*/
 	newhost.Stop()
+	newhost.WaitForStateChange(25)
 
 	newhost.status = "Stopped"
 
