@@ -14,40 +14,66 @@ import (
 
 const imagesConfigFile = "vboximages.json"
 
-var images map[string]*VBoxVMImage
+//var images map[string]*VBoxVMImage
 
-func ensureimages() {
-	if images == nil {
-		loadimages()
-	}
+var (
+	imageconfigmanager configfilemanager.ConfigManager
+	imagedata          *imageconfigdata
+)
+
+type imageconfigdata struct {
+	images map[string]*VBoxVMImage
 }
 
-func saveimages() error {
-	ensureimages()
-
-	data, err := json.Marshal(images)
-	if err != nil {
-		return err
-	}
-
-	return configfilemanager.SaveConfigfile(imagesConfigFile, data)
+func (icd *imageconfigdata) Serialize() ([]byte, error) {
+	return json.Marshal(icd.images)
 }
 
-func loadimages() error {
-	data, notexist, err := configfilemanager.LoadConfigfile(imagesConfigFile)
-	if notexist {
-		images = defaultimages()
-		return nil
+func (icd *imageconfigdata) Deserialize(data []byte) error {
+	loaddata := make(map[string]*VBoxVMImage)
+	err := json.Unmarshal(data, &loaddata)
+	if err == nil {
+		icd.images = loaddata
 	}
-
-	err = json.Unmarshal(data, &images)
-	if err != nil {
-		images = defaultimages()
-		return err
-	}
-
-	return nil
+	return err
 }
+
+func (icd *imageconfigdata) Setdefaults() {
+	icd.images = defaultimages()
+}
+
+// func ensureimages() {
+// 	if images == nil {
+// 		loadimages()
+// 	}
+// }
+
+// func saveimages() error {
+// 	ensureimages()
+
+// 	data, err := json.Marshal(images)
+// 	if err != nil {
+// 		return err
+// 	}
+
+// 	return configfilemanager.SaveConfigfile(imagesConfigFile, data)
+// }
+
+// func loadimages() error {
+// 	data, notexist, err := configfilemanager.LoadConfigfile(imagesConfigFile)
+// 	if notexist {
+// 		images = defaultimages()
+// 		return nil
+// 	}
+
+// 	err = json.Unmarshal(data, &images)
+// 	if err != nil {
+// 		images = defaultimages()
+// 		return err
+// 	}
+
+// 	return nil
+// }
 
 func imagenamefromk8sversion(k8sversion string) string {
 	return "kutti-" + k8sversion + ".ova"
@@ -87,5 +113,6 @@ func addfromfile(k8sversion string, filepath string, checksum string) error {
 }
 
 func init() {
-	loadimages()
+	imagedata = &imageconfigdata{}
+	imageconfigmanager = configfilemanager.New(imagesConfigFile, imagedata)
 }

@@ -30,5 +30,5 @@ func (i *VBoxVMImage) FromFile(filepath string) error {
 	}
 
 	i.ImageStatus = "Available"
-	return saveimages()
+	return imageconfigmanager.Save()
 }

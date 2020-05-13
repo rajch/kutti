@@ -413,11 +413,12 @@ func (vd *VBoxVMDriver) DeleteHost(hostname string, networkname string, clustern
 
 // ListK8sVersions lists the known Kubernetes versions
 func (vd *VBoxVMDriver) ListK8sVersions() ([]string, error) {
-	ensureimages()
-	result := make([]string, len(images))
+	imageconfigmanager.Load()
+
+	result := make([]string, len(imagedata.images))
 
 	i := 0
-	for key := range images {
+	for key := range imagedata.images {
 		result[i] = key
 		i++
 	}
@@ -427,11 +428,12 @@ func (vd *VBoxVMDriver) ListK8sVersions() ([]string, error) {
 
 // ListImages lists the known VM images
 func (vd *VBoxVMDriver) ListImages() ([]core.VMImage, error) {
-	ensureimages()
-	result := make([]core.VMImage, len(images))
+	imageconfigmanager.Load()
+
+	result := make([]core.VMImage, len(imagedata.images))
 
 	i := 0
-	for _, image := range images {
+	for _, image := range imagedata.images {
 		result[i] = image
 		i++
 	}
@@ -442,8 +444,8 @@ func (vd *VBoxVMDriver) ListImages() ([]core.VMImage, error) {
 // GetImage returns an image corresponding to a Kubernetes version,
 // OR an error
 func (vd *VBoxVMDriver) GetImage(k8sversion string) (core.VMImage, error) {
-	ensureimages()
-	result, ok := images[k8sversion]
+	imageconfigmanager.Load()
+	result, ok := imagedata.images[k8sversion]
 	if !ok {
 		return nil, fmt.Errorf("no image found for version %v", k8sversion)
 	}
