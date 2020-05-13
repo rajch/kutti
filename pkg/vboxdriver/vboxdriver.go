@@ -44,6 +44,12 @@ func (vd *VBoxVMDriver) Description() string {
 	return driverDescription
 }
 
+// RequiresPortForwarding specifies if the driver's networks use NAT,
+// and therefore require host ports to be forwarded
+func (vd *VBoxVMDriver) RequiresPortForwarding() bool {
+	return true
+}
+
 // Status returns the driver status
 func (vd *VBoxVMDriver) Status() string {
 	return vd.status

@@ -10,5 +10,7 @@ type VMHost interface {
 	Stop() error
 	ForceStop() error
 	WaitForStateChange(int)
+	ForwardPort(int, int) error
+	UnforwardPort(int) error
 	ForwardSSHPort(int) error
 }

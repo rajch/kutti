@@ -4,6 +4,7 @@ package core
 type VMDriver interface {
 	Name() string
 	Description() string
+	RequiresPortForwarding() bool
 	Status() string
 
 	ListNetworks() ([]VMNetwork, error)

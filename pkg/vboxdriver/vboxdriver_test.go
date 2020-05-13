@@ -2,11 +2,12 @@ package vboxdriver
 
 import (
 	"os"
-	_ "os"
 	"testing"
 )
 
 func TestRunWithResults(t *testing.T) {
+	// Uncomment to see detailed logs
+	//kuttilog.Setloglevel(4)
 
 	t.Log("Testing runwithresults with 'hostname'...")
 	output, err := runwithresults("hostname")
@@ -157,12 +158,39 @@ func TestNetworkOperations(t *testing.T) {
 
 			sshaddr := newnode.SSHAddress()
 			if sshaddr != "localhost:10001" {
-				t.Logf("SSH port mapping does not appear to be successful. Value was %s", sshaddr)
+				t.Logf("SSH port mapping does not appear to be successful. Value was '%s'", sshaddr)
 				t.Fail()
 			} else {
 				t.Log("SSH Port mapping successful.")
 			}
 
+			t.Log("Now trying to map a non-SSH port...")
+			err = newnode.ForwardPort(10080, 80)
+			if err != nil {
+				t.Logf("Port forwarding host 10080 to vm 80 failed with:%v", err)
+				t.Fail()
+			} else {
+				t.Logf("Now trying that again with a different hostport. Should fail...")
+				err = newnode.ForwardPort(10081, 80)
+				if err == nil {
+					t.Log("Second forward should have failed. It didn't.")
+					t.Fail()
+				}
+
+				t.Logf("Now trying that again with a different port, but already allocated hostport. Should fail...")
+				err = newnode.ForwardPort(10080, 81)
+				if err == nil {
+					t.Log("Third forward should have failed. It didn't.")
+					t.Fail()
+				}
+
+				t.Log("Port forwarding tests were successful. Now unforwarding...")
+				err = newnode.UnforwardPort(80)
+				if err != nil {
+					t.Logf("Unforwarding vm port 80 failed with:%v", err)
+					t.Fail()
+				}
+			}
 		}
 
 		t.Log("Now stopping host...")

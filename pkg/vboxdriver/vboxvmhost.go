@@ -7,7 +7,7 @@ import (
 )
 
 const (
-	propSSHRule       = "/kutti/VMInfo/SSHForwardingRule"
+	propSSHAddress    = "/kutti/VMInfo/SSHAddress"
 	propIPAddress     = "/VirtualBox/GuestInfo/Net/0/V4/IP"
 	propLoggedInUsers = "/VirtualBox/GuestInfo/OS/LoggedInUsers"
 
@@ -40,16 +40,16 @@ func (vh *VBoxVMHost) Status() string {
 	return vh.status
 }
 
-// SSHAddress returns the host address and port number to SSH into this host
+// SSHAddress returns the address and port number to SSH into this host
 func (vh *VBoxVMHost) SSHAddress() string {
-	result := vh.sshRule()
+	result := strings.Trim(vh.sshAddress(), " \n")
+	return result
+	// ruleparts := strings.Split(result, ":")
+	// if len(ruleparts) < 4 {
+	// 	return ""
+	// }
 
-	ruleparts := strings.Split(result, ":")
-	if len(ruleparts) < 4 {
-		return ""
-	}
-
-	return fmt.Sprintf("localhost:%s", ruleparts[3])
+	// return fmt.Sprintf("localhost:%s", ruleparts[3])
 }
 
 // Start starts the VM
@@ -110,17 +110,23 @@ func (vh *VBoxVMHost) WaitForStateChange(timeoutinseconds int) {
 	// time.Sleep(time.Duration(timeoutinseconds) * time.Second)
 }
 
-// ForwardSSHPort forwards the SSH port of this host to the specified host port
-func (vh *VBoxVMHost) ForwardSSHPort(hostport int) error {
-	// Modify NAT Network port forwarding rules to allow SSH to new host
-	// SSH rule format is:
+func (vh *VBoxVMHost) forwardingrulename(vmport int) string {
+	return fmt.Sprintf("Node %s Port %d", vh.qname(), vmport)
+}
+
+// ForwardPort creates a rule to forward the specified vm port to the
+// specified host port
+func (vh *VBoxVMHost) ForwardPort(hostport int, vmport int) error {
+	// Modify NAT Network port forwarding rules to forward vm port to host port
+	// Port forwarding rule format is:
 	// <rule name>:<protocol>:[<host ip>]:<host port>:[<guest ip>]:<guest port>
 	// The brackets [] are to be taken literally.
-	sshrule := fmt.Sprintf(
-		"SSH Node %s:tcp:[]:%d:[%s]:22",
-		vh.qname(),
+	forwardingrule := fmt.Sprintf(
+		"%s:tcp:[]:%d:[%s]:%d",
+		vh.forwardingrulename(vmport),
 		hostport,
 		vh.ipAddress(),
+		vmport,
 	)
 
 	_, err := runwithresults(
@@ -130,28 +136,15 @@ func (vh *VBoxVMHost) ForwardSSHPort(hostport int) error {
 		"--netname",
 		vh.netname,
 		"--port-forward-4",
-		sshrule,
+		forwardingrule,
 	)
 
 	if err != nil {
 		return fmt.Errorf(
-			"Could not create SSH port forwarding rule %s for node %s on network %s: %v",
-			sshrule,
+			"Could not create port forwarding rule %s for node %s on network %s: %v",
+			forwardingrule,
 			vh.name,
 			vh.netname,
-			err,
-		)
-	}
-
-	err = vh.setproperty(
-		propSSHRule,
-		sshrule,
-	)
-	if err != nil {
-		return fmt.Errorf(
-			"Could not save SSH port forwarding rule %s for node %s : %v",
-			sshrule,
-			vh.name,
 			err,
 		)
 	}
@@ -159,38 +152,80 @@ func (vh *VBoxVMHost) ForwardSSHPort(hostport int) error {
 	return nil
 }
 
-func (vh *VBoxVMHost) removeSSHPort() error {
-	sshrule, _ := vh.getproperty(propSSHRule)
-	if sshrule == "" {
-		return nil
-	}
-
-	ruleparts := strings.Split(sshrule, ":")
-	if len(ruleparts) < 1 {
-		return fmt.Errorf(
-			"Error while removing ssh rule %s for VM %s on network %s: the saved rule is invalid",
-			sshrule,
-			vh.name,
-			vh.netname,
-		)
-	}
-
+// UnforwardPort removes the rule which forwarded the specified vm port
+func (vh *VBoxVMHost) UnforwardPort(vmport int) error {
+	rulename := vh.forwardingrulename(vmport)
 	_, err := runwithresults(
 		vh.driver.vboxmanagepath,
 		"natnetwork",
 		"modify",
-		"netname",
+		"--netname",
 		vh.netname,
 		"--port-forward-4",
 		"delete",
-		ruleparts[0],
+		rulename,
 	)
 	if err != nil {
 		return fmt.Errorf(
-			"Error while removing ssh rule %s for VM %s on network %s: %v",
-			sshrule,
+			"Error while removing port forwarding rule %s for VM %s on network %s: %v",
+			rulename,
 			vh.name,
 			vh.netname,
+			err,
+		)
+	}
+
+	return nil
+}
+
+// ForwardSSHPort forwards the SSH port of this host to the specified host port
+func (vh *VBoxVMHost) ForwardSSHPort(hostport int) error {
+	// Modify NAT Network port forwarding rules to allow SSH to new host
+	// SSH rule format is:
+	// <rule name>:<protocol>:[<host ip>]:<host port>:[<guest ip>]:<guest port>
+	// The brackets [] are to be taken literally.
+	// sshrule := fmt.Sprintf(
+	// 	"SSH Node %s:tcp:[]:%d:[%s]:22",
+	// 	vh.qname(),
+	// 	hostport,
+	// 	vh.ipAddress(),
+	// )
+
+	// _, err := runwithresults(
+	// 	vh.driver.vboxmanagepath,
+	// 	"natnetwork",
+	// 	"modify",
+	// 	"--netname",
+	// 	vh.netname,
+	// 	"--port-forward-4",
+	// 	sshrule,
+	// )
+	// sshrule := fmt.Sprintf(
+	// 	"%s:tcp:[]:%d:[%s]:22",
+	// 	vh.forwardingrulename(22),
+	// 	hostport,
+	// 	vh.ipAddress(),
+	// )
+	sshaddress := fmt.Sprintf("localhost:%d", hostport)
+
+	err := vh.ForwardPort(hostport, 22)
+	if err != nil {
+		return fmt.Errorf(
+			"Could not create SSH port forwarding rule for node %s on network %s: %v",
+			vh.name,
+			vh.netname,
+			err,
+		)
+	}
+
+	err = vh.setproperty(
+		propSSHAddress,
+		sshaddress,
+	)
+	if err != nil {
+		return fmt.Errorf(
+			"Could not save SSH address for node %s : %v",
+			vh.name,
 			err,
 		)
 	}
@@ -248,10 +283,9 @@ func (vh *VBoxVMHost) ipAddress() string {
 	return result
 }
 
-func (vh *VBoxVMHost) sshRule() string {
-	result, _ := vh.getproperty(propSSHRule)
+func (vh *VBoxVMHost) sshAddress() string {
+	result, _ := vh.getproperty(propSSHAddress)
 	return result
-
 }
 
 // VirtualBox properties, and correspoding actions
