@@ -29,7 +29,7 @@ func TestDrivers(t *testing.T) {
 	var result bool
 	resultp := &result
 
-	clustermanager.ForEachDriver(func(d core.VMDriver) bool {
+	clustermanager.ForEachDriver(func(d *clustermanager.Driver) bool {
 		if d.Name() == "vbox" {
 			*resultp = true
 			return true
@@ -60,7 +60,7 @@ func TestAddNewNode(t *testing.T) {
 		t.Log("Cluster 'testclust1' not foumd. This test is supposed to run after TestNewCluster.")
 		t.FailNow()
 	}
-	node, err := cluster.AddUninitializedNode("testnode1")
+	node, err := cluster.NewUninitializedNode("testnode1")
 	if err != nil {
 		t.Logf("AddUninitializedNode failed with error:%v", err)
 		t.FailNow()

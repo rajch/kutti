@@ -5,37 +5,6 @@ import (
 	"github.com/rajch/kutti/pkg/core"
 )
 
-func newEmptyCluster(name string, k8sversion string, drivername string) (*Cluster, error) {
-	newCluster := &Cluster{
-		Name:       name,
-		K8sVersion: k8sversion,
-		DriverName: drivername,
-		//hosts:      make(map[string]core.VMHost),
-		Nodes:  make(map[string]*Node),
-		status: "UnInitialized",
-	}
-
-	// Ensure presence of VMdriver
-	err := newCluster.ensureDriver()
-	if err != nil {
-		return newCluster, err
-	}
-
-	// Create VM Network
-	klog.Println(2, "Creating network...")
-	err = newCluster.createNetwork()
-	if err != nil {
-		return newCluster, err
-	}
-
-	newCluster.Type = "Unmanaged"
-	newCluster.status = "Ready"
-	klog.Println(2, "Network created.")
-
-	return newCluster, nil
-
-}
-
 // ForEachCluster iterates over clusters
 func ForEachCluster(f func(*Cluster) bool) {
 	for _, cluster := range config.Clusters {
@@ -75,13 +44,22 @@ func NewEmptyCluster(name string, k8sversion string, drivername string) error {
 	}
 
 	// Create cluster
-	newCluster, err := newEmptyCluster(name, k8sversion, drivername)
+	newCluster, err := newunmanagedcluster(name, k8sversion, drivername)
 	if err != nil {
 		return err
 	}
 
 	config.Clusters[name] = newCluster
-	return Save()
+	return clusterconfigmanager.Save()
+}
+
+// GetCluster gets a named cluster, or nil if not present
+func GetCluster(name string) (*Cluster, bool) {
+	cluster, ok := config.Clusters[name]
+	if !ok {
+		return nil, ok
+	}
+	return cluster, true
 }
 
 // DeleteCluster deletes a cluster.
@@ -97,26 +75,44 @@ func DeleteCluster(clustername string) error {
 		return errClusterNotEmpty
 	}
 
-	err := cluster.deleteNetwork()
+	klog.Println(2, "Deleting network...")
+	err := cluster.deletenetwork()
 	if err != nil {
 		return err
 	}
+	klog.Println(2, "Network deleted.")
 
 	delete(config.Clusters, clustername)
 
-	// If this was the deault cluster, clear that
-	//if config.DefaultClusterName == clustername {
-	//	ClearDefaultCluster()
-	//}
-
-	return Save()
+	return clusterconfigmanager.Save()
 }
 
-// GetCluster gets a named cluster, or nil if not present
-func GetCluster(name string) (*Cluster, bool) {
-	cluster, ok := config.Clusters[name]
-	if !ok {
-		return nil, ok
+func newunmanagedcluster(name string, k8sversion string, drivername string) (*Cluster, error) {
+	newCluster := &Cluster{
+		Name:       name,
+		K8sVersion: k8sversion,
+		DriverName: drivername,
+		//hosts:      make(map[string]core.VMHost),
+		Nodes:  make(map[string]*Node),
+		status: "UnInitialized",
 	}
-	return cluster, true
+
+	// Ensure presence of VMdriver
+	err := newCluster.ensuredriver()
+	if err != nil {
+		return newCluster, err
+	}
+
+	// Create VM Network
+	klog.Println(2, "Creating network...")
+	err = newCluster.createnetwork()
+	if err != nil {
+		return newCluster, err
+	}
+
+	newCluster.Type = "Unmanaged"
+	newCluster.status = "Ready"
+	klog.Println(2, "Network created.")
+
+	return newCluster, nil
 }

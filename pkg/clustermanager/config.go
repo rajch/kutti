@@ -11,51 +11,80 @@ type clusterManagerConfig struct {
 	// DefaultClusterName string
 }
 
-var (
-	config clusterManagerConfig
-)
+// var (
+// 	config clusterManagerConfig
+// )
 
 const (
 	configFileName = "clusters.json"
 )
 
-// Save saves the current state to the configuration file.
-func Save() error {
-	data, err := json.Marshal(config)
-	if err != nil {
-		return err
-	}
+var (
+	clusterconfigmanager configfilemanager.ConfigManager
+	config               *clusterManagerConfig
+)
 
-	return configfilemanager.SaveConfigfile(configFileName, data)
+func (cc *clusterManagerConfig) Serialize() ([]byte, error) {
+	return json.Marshal(cc)
 }
 
-// Load loads the cluster configuration from the configuration file
-func Load() error {
-	data, notexist, err := configfilemanager.LoadConfigfile(configFileName)
-	if notexist {
-		setdefaultmanagervalue()
-		return Save()
+func (cc *clusterManagerConfig) Deserialize(data []byte) error {
+	var loadedconfig *clusterManagerConfig
+	err := json.Unmarshal(data, &loadedconfig)
+	if err == nil {
+		cc = loadedconfig
 	}
 
-	var cm clusterManagerConfig
-	err = json.Unmarshal(data, &cm)
-	if err != nil {
-		setdefaultmanagervalue()
-		Save()
-		return err
-	}
-
-	config = cm
-	return nil
+	return err
 }
 
-func setdefaultmanagervalue() {
-	config = clusterManagerConfig{
+func (cc *clusterManagerConfig) Setdefaults() {
+	cc = &clusterManagerConfig{
 		Clusters: make(map[string]*Cluster),
-		//DefaultClusterName: "",
 	}
 }
+
+// Save saves the current state to the configuration file.
+// func Save() error {
+// 	data, err := json.Marshal(config)
+// 	if err != nil {
+// 		return err
+// 	}
+
+// 	return configfilemanager.SaveConfigfile(configFileName, data)
+// }
+
+// // Load loads the cluster configuration from the configuration file
+// func Load() error {
+// 	data, notexist, err := configfilemanager.LoadConfigfile(configFileName)
+// 	if notexist {
+// 		setdefaultmanagervalue()
+// 		return Save()
+// 	}
+
+// 	var cm clusterManagerConfig
+// 	err = json.Unmarshal(data, &cm)
+// 	if err != nil {
+// 		setdefaultmanagervalue()
+// 		Save()
+// 		return err
+// 	}
+
+// 	config = cm
+// 	return nil
+// }
+
+// func setdefaultmanagervalue() {
+// 	config = clusterManagerConfig{
+// 		Clusters: make(map[string]*Cluster),
+// 		//DefaultClusterName: "",
+// 	}
+// }
 
 func init() {
-	Load()
+	//Load()
+	config = &clusterManagerConfig{
+		Clusters: make(map[string]*Cluster),
+	}
+	clusterconfigmanager = configfilemanager.New(configFileName, config)
 }

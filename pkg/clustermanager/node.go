@@ -1,6 +1,7 @@
 package clustermanager
 
 import (
+	"github.com/rajch/kutti/internal/pkg/kuttilog"
 	"github.com/rajch/kutti/pkg/core"
 )
 
@@ -19,34 +20,10 @@ func (n *Node) Cluster() *Cluster {
 	//fmt.Printf("BEFORE: Node:%+v]\n", n)
 	if n.cluster == nil {
 		n.cluster = config.Clusters[n.ClusterName]
-		n.cluster.ensureDriver()
+		n.cluster.ensuredriver()
 	}
 	//fmt.Printf("AFTER: Node:%+v]\n", n)
 	return n.cluster
-}
-
-func (n *Node) createhost() error {
-	c := n.Cluster()
-	host, err := c.driver.CreateHost(n.Name, c.NetworkName, c.Name, c.K8sVersion)
-	if err != nil {
-		n.host = nil
-		return err
-	}
-	n.host = host
-	return nil
-}
-
-func (n *Node) ensurehost() error {
-	if n.host == nil {
-		c := n.Cluster()
-		host, err := c.driver.GetHost(n.Name, c.NetworkName, c.Name)
-		if err != nil {
-			return err
-		}
-
-		n.host = host
-	}
-	return nil
 }
 
 // Status returns the current node status
@@ -103,9 +80,35 @@ func (n *Node) ForceStop() error {
 		}
 
 		// TODO: Consider moving this wait, or standardize the duration
+		kuttilog.Print(2, "Waiting for node to stop...")
 		n.host.WaitForStateChange(25)
+		kuttilog.Println(2, "Done.")
 		return nil
 	}
 
 	return errNodeCannotStop
+}
+
+func (n *Node) createhost() error {
+	c := n.Cluster()
+	host, err := c.driver.CreateHost(n.Name, c.NetworkName, c.Name, c.K8sVersion)
+	if err != nil {
+		n.host = nil
+		return err
+	}
+	n.host = host
+	return nil
+}
+
+func (n *Node) ensurehost() error {
+	if n.host == nil {
+		c := n.Cluster()
+		host, err := c.driver.GetHost(n.Name, c.NetworkName, c.Name)
+		if err != nil {
+			return err
+		}
+
+		n.host = host
+	}
+	return nil
 }
