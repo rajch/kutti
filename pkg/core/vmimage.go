@@ -7,4 +7,5 @@ type VMImage interface {
 
 	Fetch() error
 	FromFile(string) error
+	PurgeLocal() error
 }

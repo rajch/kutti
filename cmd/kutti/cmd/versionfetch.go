@@ -49,7 +49,7 @@ func versionfetch(cmd *cobra.Command, args []string) {
 
 	version, err := driver.GetVersion(versionstring)
 	if err != nil {
-		kuttilog.Printf(0, "Error:%v.\n", err)
+		kuttilog.Printf(0, "Error:%v.", err)
 		return
 	}
 
@@ -59,9 +59,10 @@ func versionfetch(cmd *cobra.Command, args []string) {
 		return
 	}
 
+	kuttilog.Printf(2, "Importing local image for version %v...", versionstring)
 	err = version.FromFile(filename)
 	if err != nil {
-		kuttilog.Printf(0, "Error:%v.\n", err)
+		kuttilog.Printf(0, "Error: Could not import local image: %v.", err)
 		return
 	}
 

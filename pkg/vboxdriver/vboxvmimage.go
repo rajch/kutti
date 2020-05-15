@@ -32,3 +32,18 @@ func (i *VBoxVMImage) FromFile(filepath string) error {
 	i.ImageStatus = "Available"
 	return imageconfigmanager.Save()
 }
+
+// PurgeLocal removes the local cached copy of an image
+func (i *VBoxVMImage) PurgeLocal() error {
+	if i.ImageStatus == "Available" {
+		err := removefile(i.K8sVersion())
+		if err == nil {
+			i.ImageStatus = "Unavailable"
+
+			return imageconfigmanager.Save()
+		}
+		return err
+	}
+
+	return nil
+}

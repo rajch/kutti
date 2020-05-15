@@ -49,7 +49,7 @@ func versionsetdefault(cmd *cobra.Command, args []string) {
 	versionstring := args[0]
 	_, err = driver.GetVersion(versionstring)
 	if err != nil {
-		kuttilog.Printf(0, "Error:%v.\n", err)
+		kuttilog.Printf(0, "Error: Could not set default version: %v.\n", err)
 		return
 	}
 

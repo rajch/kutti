@@ -112,6 +112,15 @@ func addfromfile(k8sversion string, filepath string, checksum string) error {
 	return nil
 }
 
+func removefile(k8sversion string) error {
+	filename, err := imagepathfromk8sversion(k8sversion)
+	if err != nil {
+		return err
+	}
+
+	return fileutils.RemoveFile(filename)
+}
+
 func init() {
 	imagedata = &imageconfigdata{}
 	imageconfigmanager = configfilemanager.New(imagesConfigFile, imagedata)

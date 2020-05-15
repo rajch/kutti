@@ -123,3 +123,8 @@ func DownloadFile(url string, filepath string) error {
 	}
 	return nil
 }
+
+// RemoveFile deletes a file.
+func RemoveFile(filepath string) error {
+	return os.Remove(filepath)
+}
