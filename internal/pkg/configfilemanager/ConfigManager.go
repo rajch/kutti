@@ -1,5 +1,9 @@
 package configfilemanager
 
+import (
+	"github.com/rajch/kutti/internal/pkg/kuttilog"
+)
+
 // Configdata provides methods for serializing and deserializing
 // config data, and setting default values. These methods will be called
 // by a ConfigManager as appropriate.
@@ -25,6 +29,11 @@ type fileConfigManager struct {
 func (cm *fileConfigManager) Load() error {
 	data, notexist, err := LoadConfigfile(cm.configfilename)
 	if notexist {
+		kuttilog.Printf(
+			4,
+			"[DEBUG]Config file '%s' does not exist. Loading defaults.",
+			cm.configfilename,
+		)
 		cm.configdata.Setdefaults()
 		return cm.Save()
 	}
@@ -35,18 +44,42 @@ func (cm *fileConfigManager) Load() error {
 
 	err = cm.configdata.Deserialize(data)
 	if err != nil {
+		kuttilog.Printf(
+			4,
+			"[DEBUG]Error reading config file '%s':%v. Loading defaults.",
+			cm.configfilename,
+			err,
+		)
 		cm.configdata.Setdefaults()
 		cm.Save()
 		return err
 	}
+
+	kuttilog.Printf(
+		4,
+		"[DEBUG]Config file '%s' loaded. Data is: %s",
+		cm.configfilename,
+		data,
+	)
 
 	return nil
 }
 
 // Save saves a config
 func (cm *fileConfigManager) Save() error {
+	kuttilog.Printf(
+		4,
+		"[DEBUG]Saving config file '%s'...",
+		cm.configfilename,
+	)
 	data, err := cm.configdata.Serialize()
 	if err != nil {
+		kuttilog.Printf(
+			4,
+			"[DEBUG]Error Saving config file '%s': %v.",
+			cm.configfilename,
+			err,
+		)
 		return err
 	}
 

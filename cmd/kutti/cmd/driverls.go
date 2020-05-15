@@ -4,7 +4,6 @@ import (
 	"fmt"
 
 	"github.com/rajch/kutti/pkg/clustermanager"
-	"github.com/rajch/kutti/pkg/core"
 
 	"github.com/spf13/cobra"
 )
@@ -20,22 +19,11 @@ var driverlsCmd = &cobra.Command{
 
 func init() {
 	driverCmd.AddCommand(driverlsCmd)
-
-	// Here you will define your flags and configuration settings.
-
-	// Cobra supports Persistent Flags which will work for this command
-	// and all subcommands, e.g.:
-	// driverlsCmd.PersistentFlags().String("foo", "", "A help for foo")
-
-	// Cobra supports local flags which will only run when this command
-	// is called directly, e.g.:
-	// driverlsCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 }
 
 func driverls(cmd *cobra.Command, args []string) {
 	fmt.Printf("%-12.12s  %-40.40s  %-12.12s\n", "NAME", "DESCRIPTION", "STATUS")
-	clustermanager.Load()
-	clustermanager.ForEachDriver(func(driver core.VMDriver) bool {
+	clustermanager.ForEachDriver(func(driver *clustermanager.Driver) bool {
 		fmt.Printf("%-12.12s  %-40.40s  %-12.12s\n", driver.Name(), driver.Description(), driver.Status())
 		return false
 	})

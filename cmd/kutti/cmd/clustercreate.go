@@ -3,6 +3,8 @@ package cmd
 import (
 	"errors"
 
+	"github.com/rajch/kutti/cmd/kutti/defaults"
+
 	"github.com/rajch/kutti/internal/pkg/kuttilog"
 
 	"github.com/rajch/kutti/pkg/clustermanager"
@@ -25,17 +27,17 @@ func init() {
 	clusterCmd.AddCommand(clustercreateCmd)
 
 	clustercreateCmd.Flags().StringP(
-		"version",
-		"v",
-		"1.17",
-		"Kubernetes version for the cluster",
+		"driver",
+		"d",
+		defaults.Getdefault("driver"),
+		"Cluster management driver",
 	)
 
 	clustercreateCmd.Flags().StringP(
-		"driver",
-		"d",
-		"vbox",
-		"Cluster management driver",
+		"version",
+		"v",
+		defaults.Getdefault("version"),
+		"Kubernetes version for the cluster",
 	)
 
 	clustercreateCmd.Flags().BoolP(
@@ -44,16 +46,6 @@ func init() {
 		false,
 		"Create an unmanaged cluster with no nodes",
 	)
-
-	// Here you will define your flags and configuration settings.
-
-	// Cobra supports Persistent Flags which will work for this command
-	// and all subcommands, e.g.:
-	// clustercreateCmd.PersistentFlags().String("foo", "", "A help for foo")
-
-	// Cobra supports local flags which will only run when this command
-	// is called directly, e.g.:
-	// clustercreateCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 }
 
 func clusternameonlyargs(cmd *cobra.Command, args []string) error {

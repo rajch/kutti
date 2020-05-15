@@ -7,6 +7,7 @@ import (
 
 // ForEachCluster iterates over clusters
 func ForEachCluster(f func(*Cluster) bool) {
+	// clusterconfigmanager.Load()
 	for _, cluster := range config.Clusters {
 		if cancel := f(cluster); cancel {
 			break
@@ -20,6 +21,8 @@ func NewEmptyCluster(name string, k8sversion string, drivername string) error {
 	if !IsValidName(name) {
 		return errInvalidName
 	}
+
+	//clusterconfigmanager.Load()
 
 	// Check if name exists
 	_, ok := config.Clusters[name]
@@ -55,6 +58,7 @@ func NewEmptyCluster(name string, k8sversion string, drivername string) error {
 
 // GetCluster gets a named cluster, or nil if not present
 func GetCluster(name string) (*Cluster, bool) {
+	// clusterconfigmanager.Load()
 	cluster, ok := config.Clusters[name]
 	if !ok {
 		return nil, ok

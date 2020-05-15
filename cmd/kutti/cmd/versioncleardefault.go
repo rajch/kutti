@@ -13,18 +13,29 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-package main
+
+package cmd
 
 import (
-	"log"
-
+	"github.com/rajch/kutti/cmd/kutti/defaults"
+	"github.com/rajch/kutti/internal/pkg/kuttilog"
 	"github.com/spf13/cobra"
-
-	"github.com/rajch/kutti/cmd/kutti/cmd"
 )
 
-func main() {
-	cobra.EnableCommandSorting = false
-	log.SetPrefix("kutti")
-	cmd.Execute()
+// versioncleardefaultCmd represents the versioncleardefault command
+var versioncleardefaultCmd = &cobra.Command{
+	Use:   "cleardefault",
+	Short: "Clear default version",
+	Long:  `Clear default version.`,
+	Run:   versioncleardefault,
+}
+
+func init() {
+	versionCmd.AddCommand(versioncleardefaultCmd)
+
+}
+
+func versioncleardefault(cmd *cobra.Command, args []string) {
+	defaults.Setdefault("version", "")
+	kuttilog.Println(1, "Default version cleared.")
 }

@@ -49,3 +49,15 @@ func (d *Driver) ForEachVersion(f func(*Version) bool) error {
 
 	return nil
 }
+
+// GetVersion gets the specified version, or nil
+func (d *Driver) GetVersion(version string) (*Version, error) {
+	driver := d.vmdriver
+
+	img, err := driver.GetImage(version)
+	if err == nil {
+		return &Version{image: img}, nil
+	}
+
+	return nil, err
+}

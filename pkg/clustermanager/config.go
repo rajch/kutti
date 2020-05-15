@@ -32,7 +32,7 @@ func (cc *clusterManagerConfig) Deserialize(data []byte) error {
 	var loadedconfig *clusterManagerConfig
 	err := json.Unmarshal(data, &loadedconfig)
 	if err == nil {
-		cc = loadedconfig
+		cc.Clusters = loadedconfig.Clusters
 	}
 
 	return err

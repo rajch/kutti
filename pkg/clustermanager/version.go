@@ -18,3 +18,8 @@ func (v *Version) K8sversion() string {
 func (v *Version) Status() string {
 	return v.image.Status()
 }
+
+// FromFile imports a version image from the specified file
+func (v *Version) FromFile(filename string) error {
+	return v.image.FromFile(filename)
+}
