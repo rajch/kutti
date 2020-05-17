@@ -20,6 +20,10 @@ localprovisioner: out/kutti-localprovisioner
 localprovisioner-image: out/kutti-localprovisioner build/package/kutti-localprovisioner/local.Dockerfile
 	docker image build -t $(REGISTRY_USER)/kutti-localprovisioner:$(IMAGE_TAG) -f build/package/kutti-localprovisioner/local.Dockerfile .
 
+.PHONY: localprovisioner-rmi
+localprovisioner-rmi:
+	docker image rm $(REGISTRY_USER)/kutti-localprovisioner:$(IMAGE_TAG)
+
 KUTTICMDFILES = cmd/kutti/main.go \
 				cmd/kutti/cmd/*.go \
 				cmd/kutti/defaults/*.go \
@@ -45,4 +49,4 @@ kutticmd-windows: out/kutti.exe
 .PHONY: clean
 clean:
 	rm -rf out/*
-	docker image rm $(REGISTRY_USER)/kutti-localprovisioner:$(IMAGE_TAG)
+
