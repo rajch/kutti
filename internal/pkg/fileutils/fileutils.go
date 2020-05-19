@@ -77,14 +77,14 @@ func CopyFile(sourcepath string, destpath string, buffersize int64, overwrite bo
 			return err
 		}
 
-		if kuttilog.V(4) {
-			kuttilog.Print(4, ".")
-		}
+		// if kuttilog.V(4) {
+		// 	fmt.Print(".")
+		// }
 	}
 
-	if kuttilog.V(4) {
-		kuttilog.Println(4, ".")
-	}
+	// if kuttilog.V(4) {
+	// 	fmt.Println(".")
+	// }
 
 	return err
 }

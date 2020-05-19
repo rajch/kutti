@@ -17,6 +17,7 @@ type VMDriver interface {
 	GetHost(hostname string, networkname string, clustername string) (VMHost, error)
 	DeleteHost(hostname string, networkname string, clustername string) error
 
+	FetchImageList() error
 	ListImages() ([]VMImage, error)
 	GetImage(k8sversion string) (VMImage, error)
 }

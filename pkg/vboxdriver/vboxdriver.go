@@ -426,6 +426,11 @@ func (vd *VBoxVMDriver) ListK8sVersions() ([]string, error) {
 	return result, nil
 }
 
+// FetchImageList fetches the latest list of images
+func (vd *VBoxVMDriver) FetchImageList() error {
+	return fetchimagelist()
+}
+
 // ListImages lists the known VM images
 func (vd *VBoxVMDriver) ListImages() ([]core.VMImage, error) {
 	imageconfigmanager.Load()

@@ -30,6 +30,13 @@ func (d *Driver) Status() string {
 	return d.vmdriver.Status()
 }
 
+// UpdateVersions fetches the latest list of available versions for this driver
+func (d *Driver) UpdateVersions() error {
+	driver := d.vmdriver
+
+	return driver.FetchImageList()
+}
+
 // ForEachVersion iterates over available versions for this driver
 func (d *Driver) ForEachVersion(f func(*Version) bool) error {
 	driver := d.vmdriver

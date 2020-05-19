@@ -1,9 +1,18 @@
 package vboxdriver
 
+import (
+	"fmt"
+	"path"
+
+	"github.com/rajch/kutti/internal/pkg/fileutils"
+	"github.com/rajch/kutti/pkg/core"
+)
+
 // VBoxVMImage implements the VMImage interface for VirtualBox
 type VBoxVMImage struct {
 	ImageK8sVersion string
 	ImageChecksum   string
+	ImageSourceURL  string
 	ImageStatus     string
 }
 
@@ -19,7 +28,19 @@ func (i *VBoxVMImage) Status() string {
 
 // Fetch fetches the image from wherever
 func (i *VBoxVMImage) Fetch() error {
-	panic("not implemented") // TODO: Implement
+	cachedir, _ := core.CacheDir()
+	tempfilename := fmt.Sprintf("kutti-k8s-%s.ovadownload", i.ImageK8sVersion)
+	tempfilepath := path.Join(cachedir, tempfilename)
+
+	// Download file
+	err := fileutils.DownloadFile(i.ImageSourceURL, tempfilepath)
+	if err != nil {
+		return err
+	}
+	defer fileutils.RemoveFile(tempfilepath)
+
+	// Add
+	return i.FromFile(tempfilepath)
 }
 
 // FromFile verfies an image file, and if valid, copies it to the cache.

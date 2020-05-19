@@ -4,15 +4,14 @@ package vboxdriver
 // vboxdriver
 func defaultimages() map[string]*VBoxVMImage {
 	return map[string]*VBoxVMImage{
-		"1.18": &VBoxVMImage{
-			ImageK8sVersion: "1.18",
-			ImageChecksum:   "dbdfdfaa686143199887d605d6971074886189f68c5fbf081cae874bc9a56da8",
-			ImageStatus:     "Unavailable",
-		},
-		"1.14": &VBoxVMImage{
-			ImageK8sVersion: "1.14",
-			ImageChecksum:   "d071b0f991e4c2ee6b0cd95c77c2ca6336e351717f724236f30b52a31002ff1a",
+		"1.16": &VBoxVMImage{
+			ImageK8sVersion: "1.16",
+			ImageChecksum:   "495033e926241e4fed842acf7a892cb2c65c5f6cf7803d8a01af259f7162e07c",
+			ImageSourceURL:  "https://github.com/rajch/kutti-images/releases/download/v0.1.13-beta/kutti-0.1.13-k8s-1.16.ova",
 			ImageStatus:     "Unavailable",
 		},
 	}
 }
+
+// ImagesSourceURL is the location where the master list of images can be found
+var ImagesSourceURL string = "https://github.com/rajch/kutti-images/releases/download/v0.1.13-beta/kutti-images.json"

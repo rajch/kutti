@@ -55,7 +55,18 @@ func versionfetch(cmd *cobra.Command, args []string) {
 
 	filename, err := cmd.Flags().GetString("fromfile")
 	if err != nil || filename == "" {
-		kuttilog.Println(0, "Remote fetching not yet implemented.")
+		kuttilog.Printf(1, "Fetching version %s...", versionstring)
+		err = version.Fetch()
+		if err != nil {
+			kuttilog.Printf(0, "Error: Could not download version %s: %v.", versionstring, err)
+			return
+		}
+
+		if kuttilog.V(1) {
+			kuttilog.Printf(1, "Fetched version %s.", versionstring)
+		} else {
+			kuttilog.Println(0, versionstring)
+		}
 		return
 	}
 

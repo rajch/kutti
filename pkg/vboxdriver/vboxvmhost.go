@@ -362,7 +362,7 @@ func (vh *VBoxVMHost) runwithresults(execpath string, paramarray ...string) (str
 }
 
 func (vh *VBoxVMHost) renamehost(newname string) error {
-	execname := fmt.Sprintf("/home/%s/rw-installscripts/set-hostname.sh", vboxUsername)
+	execname := fmt.Sprintf("/home/%s/kutti-installscripts/set-hostname.sh", vboxUsername)
 
 	_, err := vh.runwithresults(
 		"/usr/bin/sudo",

@@ -121,6 +121,50 @@ func removefile(k8sversion string) error {
 	return fileutils.RemoveFile(filename)
 }
 
+func fetchimagelist() error {
+	// Download image list into temp directory
+	confdir, _ := core.ConfigDir()
+	tempfilename := "vboximagesnewlist.json"
+	tempfilepath := path.Join(confdir, tempfilename)
+	err := fileutils.DownloadFile(ImagesSourceURL, tempfilepath)
+	if err != nil {
+		return err
+	}
+	defer fileutils.RemoveFile(tempfilepath)
+
+	// Load into object
+	data, _, err := configfilemanager.LoadConfigfile(tempfilename)
+	if err != nil {
+		return err
+	}
+
+	tempobj := make(map[string]*VBoxVMImage)
+	err = json.Unmarshal(data, &tempobj)
+	if err != nil {
+		return err
+	}
+
+	// Compare against current and update
+	for key, newimage := range tempobj {
+		oldimage := imagedata.images[key]
+		if oldimage != nil &&
+			newimage.ImageChecksum == oldimage.ImageChecksum &&
+			newimage.ImageSourceURL == oldimage.ImageSourceURL &&
+			oldimage.ImageStatus == "Available" {
+
+			newimage.ImageStatus = "Available"
+		}
+	}
+
+	// Make it current
+	imagedata.images = tempobj
+
+	// Save as local configuration
+	imageconfigmanager.Save()
+
+	return nil
+}
+
 func init() {
 	imagedata = &imageconfigdata{}
 	imageconfigmanager = configfilemanager.New(imagesConfigFile, imagedata)

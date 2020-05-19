@@ -19,6 +19,11 @@ func (v *Version) Status() string {
 	return v.image.Status()
 }
 
+// Fetch downloads a version image
+func (v *Version) Fetch() error {
+	return v.image.Fetch()
+}
+
 // FromFile imports a version image from the specified file
 func (v *Version) FromFile(filename string) error {
 	return v.image.FromFile(filename)
