@@ -7,9 +7,10 @@ import (
 )
 
 const (
-	propSSHAddress    = "/kutti/VMInfo/SSHAddress"
-	propIPAddress     = "/VirtualBox/GuestInfo/Net/0/V4/IP"
-	propLoggedInUsers = "/VirtualBox/GuestInfo/OS/LoggedInUsers"
+	propSSHAddress     = "/kutti/VMInfo/SSHAddress"
+	propIPAddress      = "/VirtualBox/GuestInfo/Net/0/V4/IP"
+	propLoggedInUsers  = "/VirtualBox/GuestInfo/OS/LoggedInUsers"
+	propSavedIPAddress = "/kutti/VMInfo/SavedIPAddress"
 
 	vboxUsername = "kuttiadmin"
 	vboxPassword = "Pass@word1"
@@ -125,7 +126,7 @@ func (vh *VBoxVMHost) ForwardPort(hostport int, vmport int) error {
 		"%s:tcp:[]:%d:[%s]:%d",
 		vh.forwardingrulename(vmport),
 		hostport,
-		vh.ipAddress(),
+		vh.savedipAddress(),
 		vmport,
 	)
 
@@ -280,6 +281,12 @@ func (vh *VBoxVMHost) ipAddress() string {
 	// This guestproperty is only available if the VM is
 	// running, and has the Virtual Machine additions enabled
 	result, _ := vh.getproperty(propIPAddress)
+	return result
+}
+
+func (vh *VBoxVMHost) savedipAddress() string {
+	// This guestproperty is set when the VM is created
+	result, _ := vh.getproperty(propSavedIPAddress)
 	return result
 }
 

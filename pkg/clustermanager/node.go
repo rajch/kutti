@@ -89,6 +89,25 @@ func (n *Node) ForceStop() error {
 	return errNodeCannotStop
 }
 
+// ForwardSSHPort forwards the node's SSH port
+func (n *Node) ForwardSSHPort(hostport int) error {
+	err := n.Cluster().ensuredriver()
+	if err != nil {
+		return err
+	}
+
+	if !n.Cluster().driver.RequiresPortForwarding() {
+		return errPortForwardNotSupported
+	}
+
+	err = n.ensurehost()
+	if err != nil {
+		return err
+	}
+
+	return n.host.ForwardSSHPort(hostport)
+}
+
 func (n *Node) createhost() error {
 	c := n.Cluster()
 	host, err := c.driver.CreateHost(n.Name, c.NetworkName, c.Name, c.K8sVersion)

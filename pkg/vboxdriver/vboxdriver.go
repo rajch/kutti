@@ -342,6 +342,9 @@ func (vd *VBoxVMDriver) CreateHost(hostname string, networkname string, clustern
 	}
 	newhost.WaitForStateChange(25)
 
+	// Save the IP Address
+	newhost.setproperty(propSavedIPAddress, newhost.ipAddress())
+
 	// Change the name
 	err = newhost.renamehost(hostname)
 	if err != nil {

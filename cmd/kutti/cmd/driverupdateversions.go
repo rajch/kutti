@@ -19,6 +19,7 @@ package cmd
 import (
 	"github.com/rajch/kutti/internal/pkg/kuttilog"
 	"github.com/rajch/kutti/pkg/clustermanager"
+	"github.com/rajch/kutti/pkg/vboxdriver"
 	"github.com/spf13/cobra"
 )
 
@@ -38,6 +39,7 @@ var driverupdateversionsCmd = &cobra.Command{
 func init() {
 	driverCmd.AddCommand(driverupdateversionsCmd)
 
+	driverupdateversionsCmd.Flags().String("updateurl", "", "Update URL")
 }
 
 func driverupdateversions(cmd *cobra.Command, args []string) {
@@ -46,6 +48,11 @@ func driverupdateversions(cmd *cobra.Command, args []string) {
 	if !ok {
 		kuttilog.Printf(0, "Error: Driver '%s' not found.", drivername)
 		return
+	}
+
+	updateurl, _ := cmd.Flags().GetString("updateurl")
+	if updateurl != "" {
+		vboxdriver.ImagesSourceURL = updateurl
 	}
 
 	kuttilog.Println(1, "Updating driver versions...")
