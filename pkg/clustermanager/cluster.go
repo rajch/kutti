@@ -56,6 +56,14 @@ func (c *Cluster) DeleteNode(nodename string, force bool) error {
 		kuttilog.Printf(2, "Node %s stopped.", nodename)
 	}
 
+	// Unmap ports
+	for key := range n.Ports {
+		err := n.host.UnforwardPort(key)
+		if err != nil {
+			kuttilog.Printf(3, "Error while unmapping ports for node '%s': %v.", nodename, err)
+		}
+	}
+
 	return c.deletenode(nodename)
 }
 
@@ -123,6 +131,7 @@ func (c *Cluster) addnode(nodename string, nodetype string) (*Node, error) {
 		ClusterName: c.Name,
 		Name:        nodename,
 		Type:        nodetype,
+		Ports:       make(map[int]int),
 	}
 
 	err = newnode.createhost()

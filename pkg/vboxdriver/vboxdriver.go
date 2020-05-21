@@ -342,23 +342,15 @@ func (vd *VBoxVMDriver) CreateHost(hostname string, networkname string, clustern
 	}
 	newhost.WaitForStateChange(25)
 
-	// Save the IP Address
-	newhost.setproperty(propSavedIPAddress, newhost.ipAddress())
-
 	// Change the name
 	err = newhost.renamehost(hostname)
 	if err != nil {
 		return newhost, err
 	}
-	/*
-		newhost.status = "Started"
 
-		// Forward the SSH port
-		err = newhost.ForwardSSHPort(10000 + position)
-		if err != nil {
-			return newhost, err
-		}
-	*/
+	// Save the IP Address
+	newhost.setproperty(propSavedIPAddress, newhost.ipAddress())
+
 	newhost.Stop()
 	newhost.WaitForStateChange(25)
 

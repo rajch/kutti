@@ -13,6 +13,7 @@ type Node struct {
 	Type        string
 	host        core.VMHost
 	status      string
+	Ports       map[int]int
 }
 
 // Cluster returns the cluster this node belongs to
@@ -105,7 +106,13 @@ func (n *Node) ForwardSSHPort(hostport int) error {
 		return err
 	}
 
-	return n.host.ForwardSSHPort(hostport)
+	err = n.host.ForwardSSHPort(hostport)
+	if err != nil {
+		return err
+	}
+
+	n.Ports[22] = hostport
+	return clusterconfigmanager.Save()
 }
 
 func (n *Node) createhost() error {
