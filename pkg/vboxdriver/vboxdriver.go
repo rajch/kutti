@@ -17,10 +17,10 @@ const (
 	driverDescription = "Kutti driver for VirtualBox >=6.0"
 )
 
-var (
-	// DefaultNetCIDR is the address range used by virtual networks
-	DefaultNetCIDR = "192.168.125.0/24"
+// DefaultNetCIDR is the address range used by virtual networks.
+var DefaultNetCIDR = "192.168.125.0/24"
 
+var (
 	dhcpaddress       = "192.168.125.3"
 	dhcpnetmask       = "255.255.255.0"
 	ipNetAddr         = "192.168.125"
@@ -28,35 +28,35 @@ var (
 	forwardedPortBase = 10000
 )
 
-// VBoxVMDriver implements the VMDriver interface for VirtualBox
+// VBoxVMDriver implements the VMDriver interface for VirtualBox.
 type VBoxVMDriver struct {
 	vboxmanagepath string
 	status         string
 }
 
-// Name returns the driver identifier string
+// Name returns the driver identifier string.
 func (vd *VBoxVMDriver) Name() string {
 	return driverName
 }
 
-// Description returns the driver description
+// Description returns the driver description.
 func (vd *VBoxVMDriver) Description() string {
 	return driverDescription
 }
 
 // RequiresPortForwarding specifies if the driver's networks use NAT,
-// and therefore require host ports to be forwarded
+// and therefore require host ports to be forwarded.
 func (vd *VBoxVMDriver) RequiresPortForwarding() bool {
 	return true
 }
 
-// Status returns the driver status
+// Status returns the driver status.
 func (vd *VBoxVMDriver) Status() string {
 	return vd.status
 }
 
 /*ListNetworks parses the list of NAT networks returned by
-`VBoxManage natnetwork list`.
+    VBoxManage natnetwork list
 As of VBoxManage 6.0.8r130520, the format is:
 
   NAT Networks:
@@ -129,9 +129,8 @@ func (vd *VBoxVMDriver) ListNetworks() ([]core.VMNetwork, error) {
 	return result, nil
 }
 
-/*CreateNetwork creates a new VirtualBox NAT network.
-It uses the CIDR common to all Kutti networks, and is dhcp-enabled at start.
-*/
+// CreateNetwork creates a new VirtualBox NAT network.
+// It uses the CIDR common to all Kutti networks, and is dhcp-enabled at start.
 func (vd *VBoxVMDriver) CreateNetwork(netname string) (core.VMNetwork, error) {
 	// Multiple VirtualBox NAT Networks can have the same IP range
 	// So, all Kutti networks will use the same network CIDR
@@ -178,7 +177,7 @@ func (vd *VBoxVMDriver) CreateNetwork(netname string) (core.VMNetwork, error) {
 	return newnetwork, err
 }
 
-// GetNetwork returns a network, or an error
+// GetNetwork returns a network, or an error.
 func (vd *VBoxVMDriver) GetNetwork(netname string) (core.VMNetwork, error) {
 	networks, err := vd.ListNetworks()
 	if err != nil {
@@ -194,7 +193,9 @@ func (vd *VBoxVMDriver) GetNetwork(netname string) (core.VMNetwork, error) {
 	return nil, fmt.Errorf("Network %s not found", netname)
 }
 
-// DeleteNetwork deletes a network
+// DeleteNetwork deletes a network.
+// It does this by running the command:
+//   VBoxManage natnetwork remove --netname <networkname>
 func (vd *VBoxVMDriver) DeleteNetwork(netname string) error {
 	output, err := runwithresults(vd.vboxmanagepath,
 		"natnetwork",
@@ -221,7 +222,7 @@ func (vd *VBoxVMDriver) DeleteNetwork(netname string) error {
 }
 
 /*ListHosts parses the list of VMs returned by
-`VBoxManage list vms`
+    VBoxManage list vms
 As of VBoxManage 6.0.8r130520, the format is:
 
   "Matsya" {e3509073-d188-4cca-8eaf-cb9f3be7ac4a}
@@ -242,12 +243,12 @@ func (vd *VBoxVMDriver) ListHosts() ([]core.VMHost, error) {
 		return nil, fmt.Errorf("Could not get list of VMs: %v", err)
 	}
 
+	result := []core.VMHost{}
 	lines := strings.Split(output, "\n")
 	if len(lines) < 1 {
-		return []core.VMHost{}, nil
+		return result, nil
 	}
 
-	result := []core.VMHost{}
 	actualcount := 0
 	for _, value := range lines {
 		line := strings.Split(value, " ")
@@ -267,28 +268,16 @@ func (vd *VBoxVMDriver) ListHosts() ([]core.VMHost, error) {
 }
 
 // CreateHost creates a VM, and connects it to a previously created NAT network.
-// It also starts the VM, and creates a port fowarding rule on the network to
-// forward the SSH port.
+// It also starts the VM, changes the hostname, saves the IP address, and stops
+// it again.
+// It runs the following two VBoxManage commands, in order:
+//   VBoxManage import <nodeimageovafile> --vsys 0 --vmname "<hostname>"
+//   VBoxManage modifyvm "<hostname>" --nic1 natnetwork --nat-network1 <networkname>
+// The first imports from an .ova file (easiest way to get fully configured VM), while
+// setting the VM name. The second connects the first network interface card to
+// the NAT network.
 func (vd *VBoxVMDriver) CreateHost(hostname string, networkname string, clustername string, k8sversion string) (core.VMHost, error) {
-	/*
-		We need to run the following two VBoxManage commands, in order:
 
-		- VBoxManage import <nodeimageovafile> --vsys 0 --vmname "<hostname>"
-		- VBoxManage modifyvm "<hostname>" --nic1 natnetwork --nat-network1 <networkname>
-
-		The first imports from an .ova file (easiest way to get fully configured VM), while
-		setting the VM name. The second connects the first network interface card to
-		the NAT network.
-	*/
-
-	// cachedir, err := core.CacheDir()
-	// if err != nil {
-	// 	return nil, fmt.Errorf("Could not retrieve CacheDir: %v", err)
-	// }
-
-	// DOING: ovafile hardcoded here. Correcting.
-	// ovafile := path.Join(cachedir, "Krishna-1.0.ova")
-	// ovafile := path.Join(cachedir, "kutti-1.14.ova")
 	ovafile, err := imagepathfromk8sversion(k8sversion)
 	if err != nil {
 		return nil, err
@@ -330,10 +319,9 @@ func (vd *VBoxVMDriver) CreateHost(hostname string, networkname string, clustern
 	)
 
 	if err != nil {
-		newhost.status = fmt.Sprintf("Error: Could not attach node %s to network %s: %v", hostname, networkname, err)
+		newhost.status = "Error"
 		return newhost, fmt.Errorf("Could not attach node %s to network %s: %v", hostname, networkname, err)
 	}
-	//newhost.status = "NetworkAttached"
 
 	// Start the host
 	err = newhost.Start()
@@ -360,6 +348,8 @@ func (vd *VBoxVMDriver) CreateHost(hostname string, networkname string, clustern
 }
 
 // GetHost returns the named host, or an error.
+// It does this by running the command:
+//   VBoxManage guestprorty enumerate <hostname> --patterns "/VirtualBox/GuestInfo/Net/0/*|/kutti/*|/VirtualBox/GuestInfo/OS/LoggedInUsers"
 func (vd *VBoxVMDriver) GetHost(hostname string, networkname string, clustername string) (core.VMHost, error) {
 	output, err := runwithresults(
 		vd.vboxmanagepath,
@@ -377,8 +367,6 @@ func (vd *VBoxVMDriver) GetHost(hostname string, networkname string, clustername
 	foundhost := &VBoxVMHost{driver: vd, name: hostname, netname: networkname, clustername: clustername, status: "Stopped"}
 
 	if output != "" {
-		// Parse output
-		// foundhost.status = "Ready"
 		foundhost.parseProps(output)
 	}
 
@@ -386,12 +374,10 @@ func (vd *VBoxVMDriver) GetHost(hostname string, networkname string, clustername
 }
 
 // DeleteHost deletes a VM.
+// It does this by running the command:
+//   VBoxManage unregistervm "<hostname>" --delete
 func (vd *VBoxVMDriver) DeleteHost(hostname string, networkname string, clustername string) error {
-	/*
-		We need to run:
 
-		- VBoxManage unregistervm "<nodename>" --delete
-	*/
 	output, err := runwithresults(
 		vd.vboxmanagepath,
 		"unregistervm",
@@ -406,7 +392,7 @@ func (vd *VBoxVMDriver) DeleteHost(hostname string, networkname string, clustern
 	return nil
 }
 
-// ListK8sVersions lists the known Kubernetes versions
+// ListK8sVersions lists the known Kubernetes versions.
 func (vd *VBoxVMDriver) ListK8sVersions() ([]string, error) {
 	imageconfigmanager.Load()
 
@@ -421,12 +407,12 @@ func (vd *VBoxVMDriver) ListK8sVersions() ([]string, error) {
 	return result, nil
 }
 
-// FetchImageList fetches the latest list of images
+// FetchImageList fetches the latest list of VM images.
 func (vd *VBoxVMDriver) FetchImageList() error {
 	return fetchimagelist()
 }
 
-// ListImages lists the known VM images
+// ListImages lists the known VM images.
 func (vd *VBoxVMDriver) ListImages() ([]core.VMImage, error) {
 	imageconfigmanager.Load()
 
@@ -442,7 +428,7 @@ func (vd *VBoxVMDriver) ListImages() ([]core.VMImage, error) {
 }
 
 // GetImage returns an image corresponding to a Kubernetes version,
-// OR an error
+// or an error.
 func (vd *VBoxVMDriver) GetImage(k8sversion string) (core.VMImage, error) {
 	imageconfigmanager.Load()
 	result, ok := imagedata.images[k8sversion]
@@ -453,7 +439,7 @@ func (vd *VBoxVMDriver) GetImage(k8sversion string) (core.VMImage, error) {
 	return result, nil
 }
 
-// New returns a pointer to a new VBoxVMDriver OR an error
+// New returns a pointer to a new VBoxVMDriver or an error.
 func New() (*VBoxVMDriver, error) {
 	result := &VBoxVMDriver{}
 

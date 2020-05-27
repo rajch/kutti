@@ -14,8 +14,6 @@ import (
 
 const imagesConfigFile = "vboximages.json"
 
-//var images map[string]*VBoxVMImage
-
 var (
 	imageconfigmanager configfilemanager.ConfigManager
 	imagedata          *imageconfigdata
@@ -41,39 +39,6 @@ func (icd *imageconfigdata) Deserialize(data []byte) error {
 func (icd *imageconfigdata) Setdefaults() {
 	icd.images = defaultimages()
 }
-
-// func ensureimages() {
-// 	if images == nil {
-// 		loadimages()
-// 	}
-// }
-
-// func saveimages() error {
-// 	ensureimages()
-
-// 	data, err := json.Marshal(images)
-// 	if err != nil {
-// 		return err
-// 	}
-
-// 	return configfilemanager.SaveConfigfile(imagesConfigFile, data)
-// }
-
-// func loadimages() error {
-// 	data, notexist, err := configfilemanager.LoadConfigfile(imagesConfigFile)
-// 	if notexist {
-// 		images = defaultimages()
-// 		return nil
-// 	}
-
-// 	err = json.Unmarshal(data, &images)
-// 	if err != nil {
-// 		images = defaultimages()
-// 		return err
-// 	}
-
-// 	return nil
-// }
 
 func imagenamefromk8sversion(k8sversion string) string {
 	return "kutti-" + k8sversion + ".ova"

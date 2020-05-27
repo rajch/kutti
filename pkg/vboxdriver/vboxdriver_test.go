@@ -132,7 +132,7 @@ func TestNetworkOperations(t *testing.T) {
 	}
 
 	t.Log("ListNetwork seems to have worked. Now calling CreateHost...")
-	newnode, err := drv.CreateHost("champu", "zintakova", "zinta", "1.14")
+	newnode, err := drv.CreateHost("champu", "zintakova", "zinta", "1.18")
 	if err != nil {
 		t.Logf("Error from CreateHost: %v\n", err)
 		t.FailNow()

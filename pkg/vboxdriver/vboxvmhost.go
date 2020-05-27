@@ -30,30 +30,27 @@ func (vh *VBoxVMHost) qname() string {
 	return vh.clustername + "-" + vh.name
 }
 
-// Name is the name of the host
+// Name is the name of the VM host.
 func (vh *VBoxVMHost) Name() string {
 	return vh.name
 }
 
-// Status can be ~"Created", "Fetched" or "Ready"~
-// Stopped, Running
+// Status can be Stopped, Running or Error.
 func (vh *VBoxVMHost) Status() string {
 	return vh.status
 }
 
-// SSHAddress returns the address and port number to SSH into this host
+// SSHAddress returns the address and port number to SSH into this VM host.
 func (vh *VBoxVMHost) SSHAddress() string {
-	result := strings.Trim(vh.sshAddress(), " \n")
+	result := vh.sshAddress()
 	return result
-	// ruleparts := strings.Split(result, ":")
-	// if len(ruleparts) < 4 {
-	// 	return ""
-	// }
-
-	// return fmt.Sprintf("localhost:%s", ruleparts[3])
 }
 
-// Start starts the VM
+// Start starts a VM host.
+// It does this by running the command:
+//   VBoxManage startvm <hostname> --type headless
+// Note that a VM host may not be ready for further operations at the end of this.
+// See WaitForStateChange.
 func (vh *VBoxVMHost) Start() error {
 	output, err := runwithresults(
 		vh.driver.vboxmanagepath,
@@ -71,7 +68,11 @@ func (vh *VBoxVMHost) Start() error {
 	return nil
 }
 
-// Stop stops the VM
+// Stop stops a VM host.
+// It does this by running the command:
+//   VBoxManage controlvm <hostname> acpipowerbutton
+// Note that a VM host may not be ready for further operations at the end of this.
+// See WaitForStateChange.
 func (vh *VBoxVMHost) Stop() error {
 	_, err := runwithresults(
 		vh.driver.vboxmanagepath,
@@ -88,7 +89,9 @@ func (vh *VBoxVMHost) Stop() error {
 	return nil
 }
 
-// ForceStop stops the VM forcibly
+// ForceStop stops a VM host forcibly.
+// It does this by running the command:
+//   VBoxManage controlvm <hostname> poweroff
 func (vh *VBoxVMHost) ForceStop() error {
 	_, err := runwithresults(
 		vh.driver.vboxmanagepath,
@@ -105,18 +108,36 @@ func (vh *VBoxVMHost) ForceStop() error {
 	return nil
 }
 
-// WaitForStateChange waits the specified number of seconds
+// WaitForStateChange waits the specified number of seconds,
+// or until the VM host status changes from Stopped to Running or vice versa.
+// It does this by running the command:
+//   VBoxManage guestproperty wait <hostname> /VirtualBox/GuestInfo/OS/LoggedInUsers --timeout <milliseconds> --fail-on-timeout
+// WaitForStateChange should be called after a call to Start or Stop, before
+// any other operation.
 func (vh *VBoxVMHost) WaitForStateChange(timeoutinseconds int) {
-	vh.vboxwaitforstatechange(timeoutinseconds)
-	// time.Sleep(time.Duration(timeoutinseconds) * time.Second)
+	_, _ = runwithresults(
+		vh.driver.vboxmanagepath,
+		"guestproperty",
+		"wait",
+		vh.qname(),
+		propLoggedInUsers,
+		"--timeout",
+		fmt.Sprintf("%v", timeoutinseconds*1000),
+		"--fail-on-timeout",
+	)
 }
 
 func (vh *VBoxVMHost) forwardingrulename(vmport int) string {
 	return fmt.Sprintf("Node %s Port %d", vh.qname(), vmport)
 }
 
-// ForwardPort creates a rule to forward the specified vm port to the
-// specified host port
+// ForwardPort creates a rule to forward the specified VM host port to the
+// specified physical host port. It does this by running the command:
+//   VBoxManage natnetwork modify --netname <networkname> --port-forward-4 <rule>
+// Port forwarding rule format is:
+//   <rule name>:<protocol>:[<host ip>]:<host port>:[<guest ip>]:<guest port>
+// The brackets [] are to be taken literally.
+// This driver writes the rule name as "Node <nodename> Port <vmport>".
 func (vh *VBoxVMHost) ForwardPort(hostport int, vmport int) error {
 	// Modify NAT Network port forwarding rules to forward vm port to host port
 	// Port forwarding rule format is:
@@ -153,7 +174,10 @@ func (vh *VBoxVMHost) ForwardPort(hostport int, vmport int) error {
 	return nil
 }
 
-// UnforwardPort removes the rule which forwarded the specified vm port
+// UnforwardPort removes the rule which forwarded the specified VM host port.
+// It does this by running the command:
+//   VBoxManage natnetwork modify --netname <networkname> --port-forward-4 delete <rulename>
+// This driver writes the rule name as "Node <nodename> Port <vmport>".
 func (vh *VBoxVMHost) UnforwardPort(vmport int) error {
 	rulename := vh.forwardingrulename(vmport)
 	_, err := runwithresults(
@@ -179,35 +203,9 @@ func (vh *VBoxVMHost) UnforwardPort(vmport int) error {
 	return nil
 }
 
-// ForwardSSHPort forwards the SSH port of this host to the specified host port
+// ForwardSSHPort forwards the SSH port of a VM host to the specified
+// physical host port. See ForwardPort for details.
 func (vh *VBoxVMHost) ForwardSSHPort(hostport int) error {
-	// Modify NAT Network port forwarding rules to allow SSH to new host
-	// SSH rule format is:
-	// <rule name>:<protocol>:[<host ip>]:<host port>:[<guest ip>]:<guest port>
-	// The brackets [] are to be taken literally.
-	// sshrule := fmt.Sprintf(
-	// 	"SSH Node %s:tcp:[]:%d:[%s]:22",
-	// 	vh.qname(),
-	// 	hostport,
-	// 	vh.ipAddress(),
-	// )
-
-	// _, err := runwithresults(
-	// 	vh.driver.vboxmanagepath,
-	// 	"natnetwork",
-	// 	"modify",
-	// 	"--netname",
-	// 	vh.netname,
-	// 	"--port-forward-4",
-	// 	sshrule,
-	// )
-	// sshrule := fmt.Sprintf(
-	// 	"%s:tcp:[]:%d:[%s]:22",
-	// 	vh.forwardingrulename(22),
-	// 	hostport,
-	// 	vh.ipAddress(),
-	// )
-	sshaddress := fmt.Sprintf("localhost:%d", hostport)
 
 	err := vh.ForwardPort(hostport, 22)
 	if err != nil {
@@ -218,6 +216,8 @@ func (vh *VBoxVMHost) ForwardSSHPort(hostport int) error {
 			err,
 		)
 	}
+
+	sshaddress := fmt.Sprintf("localhost:%d", hostport)
 
 	err = vh.setproperty(
 		propSSHAddress,
@@ -277,22 +277,26 @@ func (vh *VBoxVMHost) setproperty(propname string, value string) error {
 	return nil
 }
 
+func trimpropend(s string) string {
+	return strings.Trim(s, " \n")
+}
+
 func (vh *VBoxVMHost) ipAddress() string {
 	// This guestproperty is only available if the VM is
 	// running, and has the Virtual Machine additions enabled
 	result, _ := vh.getproperty(propIPAddress)
-	return result
+	return trimpropend(result)
 }
 
 func (vh *VBoxVMHost) savedipAddress() string {
 	// This guestproperty is set when the VM is created
 	result, _ := vh.getproperty(propSavedIPAddress)
-	return result
+	return trimpropend(result)
 }
 
 func (vh *VBoxVMHost) sshAddress() string {
 	result, _ := vh.getproperty(propSSHAddress)
-	return result
+	return trimpropend(result)
 }
 
 // VirtualBox properties, and correspoding actions
@@ -331,20 +335,13 @@ func (vh *VBoxVMHost) parseProps(propstr string) {
 			f(vh, record[2])
 		}
 	}
-
-	// fmt.Println("Not found")
-	// fmt.Println("---------")
-	// fmt.Println(r1.FindAllStringSubmatch(strErr, 1)[0][1])
-	// fmt.Println("NOT Not found")
-	// fmt.Println(r1.FindAllStringSubmatch(strStopped, 1))
-	// fmt.Println("Stopped")
-	// fmt.Println("---------")
-	// results := r2.FindAllStringSubmatch(strStopped, -1)
-	// for i := 0; i < len(results); i++ {
-	// 	fmt.Printf("Name: %v, Value:%v\n", results[i][1], results[i][2])
-	// }
 }
 
+// runwithresults allows running commands inside a VM Host.
+// It does this by running the command:
+// - VBoxManage guestcontrol <hostname> --username <username> --password <password> run -- <command line>
+// This requires Virtual Machine Additions to be running in the guest operating system.
+// The guest OS should be fully booted up.
 func (vh *VBoxVMHost) runwithresults(execpath string, paramarray ...string) (string, error) {
 	params := []string{
 
@@ -375,21 +372,6 @@ func (vh *VBoxVMHost) renamehost(newname string) error {
 		"/usr/bin/sudo",
 		execname,
 		newname,
-	)
-
-	return err
-}
-
-func (vh *VBoxVMHost) vboxwaitforstatechange(timeoutinseconds int) error {
-	_, err := runwithresults(
-		vh.driver.vboxmanagepath,
-		"guestproperty",
-		"wait",
-		vh.qname(),
-		propLoggedInUsers,
-		"--timeout",
-		fmt.Sprintf("%v", timeoutinseconds*1000),
-		"--fail-on-timeout",
 	)
 
 	return err
