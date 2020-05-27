@@ -1,6 +1,9 @@
 package core
 
-// VMHost describes a node
+// VMHost describes a virtual host. In kutti, a VMHost can be
+// started, stoppped normally and stopped forcibly. If the VMDriver and
+// VMNetwork use NAT, then a VMHost can also have its ports forwarded
+// to physical host ports.
 type VMHost interface {
 	Name() string
 	Status() string
@@ -9,8 +12,8 @@ type VMHost interface {
 	Start() error
 	Stop() error
 	ForceStop() error
-	WaitForStateChange(int)
-	ForwardPort(int, int) error
-	UnforwardPort(int) error
-	ForwardSSHPort(int) error
+	WaitForStateChange(timeoutinseconds int)
+	ForwardPort(hostport int, vmport int) error
+	UnforwardPort(vmport int) error
+	ForwardSSHPort(hostport int) error
 }

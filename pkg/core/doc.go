@@ -1,7 +1,9 @@
 // Package core contains interfaces which define core kutti functionality,
 // and some utility functions.
+// Package core also provides a central place for drivers to register themselves. All drivers
+// should call the RegisterDriver function with a unique name on init.
 //
-// Some prominent interfaces are:
+// The interfaces are:
 //
 // VMDriver
 //
@@ -29,4 +31,7 @@
 //
 // This defines an "image" from which a VMHost can be created. An image should have a
 // unique name, a Kubernetes version, and a checksum facility.
+//
+// Driver Management
+//
 package core

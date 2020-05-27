@@ -13,7 +13,7 @@ func ensureDirectory(path string) error {
 	return err
 }
 
-// CacheDir returns the location where the kutti cache should reside
+// CacheDir returns the location where the kutti cache should reside.
 // The kutti cache contains images.
 func CacheDir() (result string, err error) {
 	result, err = os.UserCacheDir()
