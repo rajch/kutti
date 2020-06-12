@@ -45,11 +45,16 @@ func (n *Node) Start() error {
 	}
 
 	if n.Status() == "Stopped" {
-		return n.host.Start()
+		err = n.host.Start()
+		if err != nil {
+			return err
+		}
+
+		n.host.WaitForStateChange(25)
+		return nil
 	}
 
 	return errNodeCannotStart
-
 }
 
 // Stop starts a node
@@ -60,7 +65,13 @@ func (n *Node) Stop() error {
 	}
 
 	if n.Status() == "Running" {
-		return n.host.Stop()
+		err = n.host.Stop()
+		if err != nil {
+			return err
+		}
+
+		n.host.WaitForStateChange(25)
+		return nil
 	}
 
 	return errNodeCannotStop

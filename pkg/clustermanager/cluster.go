@@ -32,7 +32,10 @@ func (c *Cluster) NewUninitializedNode(nodename string) (*Node, error) {
 	return c.addnode(nodename, "Unmanaged")
 }
 
-// DeleteNode deletes a node completely
+// DeleteNode deletes a node completely. By default, a node is not deleted
+// if it is running. The force parameter causes the node to be stopped and
+// deleted. In some rare cases for some drivers, manual cleanup may be
+// needed after a forced delete.
 func (c *Cluster) DeleteNode(nodename string, force bool) error {
 	n, ok := c.Nodes[nodename]
 	if !ok {
@@ -57,14 +60,16 @@ func (c *Cluster) DeleteNode(nodename string, force bool) error {
 	}
 
 	// Unmap ports
+	kuttilog.Println(2, "Unmapping ports...")
 	for key := range n.Ports {
 		err := n.host.UnforwardPort(key)
 		if err != nil {
-			kuttilog.Printf(3, "Error while unmapping ports for node '%s': %v.", nodename, err)
+			kuttilog.Printf(2, "Error while unmapping ports for node '%s': %v.", nodename, err)
 		}
 	}
+	kuttilog.Println(2, "Ports unmapped.")
 
-	return c.deletenode(nodename)
+	return c.deletenode(nodename, force)
 }
 
 func (c *Cluster) ensuredriver() error {
@@ -148,14 +153,14 @@ func (c *Cluster) deletenodeentry(nodename string) error {
 	return clusterconfigmanager.Save()
 }
 
-func (c *Cluster) deletenode(nodename string) error {
+func (c *Cluster) deletenode(nodename string, force bool) error {
 	err := c.ensuredriver()
 	if err != nil {
 		return err
 	}
 
 	err = c.driver.DeleteHost(nodename, c.NetworkName, c.Name)
-	if err == nil {
+	if err == nil || force {
 		err = c.deletenodeentry(nodename)
 	}
 

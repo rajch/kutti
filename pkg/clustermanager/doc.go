@@ -1,2 +1,2 @@
-// Package clustermanager manages clusters, nodes, drivers and images.
+// Package clustermanager manages clusters, nodes, drivers and versions.
 package clustermanager
