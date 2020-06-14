@@ -278,7 +278,7 @@ func (vh *VBoxVMHost) setproperty(propname string, value string) error {
 }
 
 func trimpropend(s string) string {
-	return strings.Trim(s, " \n")
+	return strings.TrimSpace(s)
 }
 
 func (vh *VBoxVMHost) ipAddress() string {
