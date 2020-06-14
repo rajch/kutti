@@ -12,7 +12,6 @@ all: kutticmd
 out/kutti-localprovisioner: cmd/kutti-localprovisioner/main.go
 	CGO_ENABLED=0 go build -o out/kutti-localprovisioner cmd/kutti-localprovisioner/main.go
 
-
 .PHONY: localprovisioner
 localprovisioner: out/kutti-localprovisioner
 
@@ -41,12 +40,17 @@ out/kutti: $(KUTTICMDFILES)
 kutticmd: out/kutti
 
 out/kutti.exe: $(KUTTICMDFILES)
-	CGO_ENABLED=0 GOOS=windows go build -o $@ $<
+	CGO_ENABLED=0 GOOS=windows GOARCH=amd64 go build -o $@ $<
 
 .PHONY: kutticmd-windows
 kutticmd-windows: out/kutti.exe
 
+out/kutti-windows-installer.exe: build/package/kutti-windows-installer/kutti-windows-installer.nsi out/kutti.exe
+	makensis -NOCD -V3 -- $<
+
+.PHONY: kutticmd-windows-installer
+kutticmd-windows-installer: out/kutti-windows-installer.exe
+
 .PHONY: clean
 clean:
 	rm -rf out/*
-
