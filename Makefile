@@ -51,6 +51,12 @@ out/kutti-windows-installer.exe: build/package/kutti-windows-installer/kutti-win
 .PHONY: kutticmd-windows-installer
 kutticmd-windows-installer: out/kutti-windows-installer.exe
 
+out/kutti-mac: $(KUTTICMDFILES)
+	CGO_ENABLED=0 GOOS=darwin GOARCH=amd64 go build -o $@ $<
+
+.PHONY: kutticmd-mac
+kutticmd-mac: out/kutti-mac
+
 .PHONY: clean
 clean:
 	rm -rf out/*
