@@ -40,6 +40,15 @@ func nodecreate(cmd *cobra.Command, args []string) {
 		return
 	}
 
+	// Check if sshport is occupied
+	if sshport != 0 {
+		err = cluster.CheckHostport(sshport)
+		if err != nil {
+			kuttilog.Printf(0, "Error: Could not map host port %v - %v.", sshport, err)
+			return
+		}
+	}
+
 	nodename := args[0]
 	kuttilog.Printf(1, "Creating node '%s' on cluster %s...", nodename, cluster.Name)
 	newnode, err := cluster.NewUninitializedNode(nodename)

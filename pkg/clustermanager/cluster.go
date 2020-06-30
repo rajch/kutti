@@ -72,6 +72,18 @@ func (c *Cluster) DeleteNode(nodename string, force bool) error {
 	return c.deletenode(nodename, force)
 }
 
+// CheckHostport checks if a host port is occupied in the current cluster.
+func (c *Cluster) CheckHostport(hostport int) error {
+	for _, nodevalue := range c.Nodes {
+		for _, hostportvalue := range nodevalue.Ports {
+			if hostportvalue == hostport {
+				return errPortAlreadyUsed
+			}
+		}
+	}
+	return nil
+}
+
 func (c *Cluster) ensuredriver() error {
 	if c.driver == nil {
 		driver, ok := core.GetDriver(c.DriverName)

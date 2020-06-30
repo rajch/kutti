@@ -117,6 +117,11 @@ func (n *Node) ForwardSSHPort(hostport int) error {
 		return err
 	}
 
+	err = n.CheckHostport(hostport)
+	if err != nil {
+		return err
+	}
+
 	err = n.host.ForwardSSHPort(hostport)
 	if err != nil {
 		return err
@@ -148,4 +153,10 @@ func (n *Node) ensurehost() error {
 		n.host = host
 	}
 	return nil
+}
+
+// CheckHostport checks if a host port is occupied in the current cluster.
+func (n *Node) CheckHostport(hostport int) error {
+	c := n.Cluster()
+	return c.CheckHostport(hostport)
 }

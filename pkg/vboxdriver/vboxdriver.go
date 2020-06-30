@@ -446,23 +446,23 @@ func New() (*VBoxVMDriver, error) {
 	// find VBoxManage tool and set it
 	vbmpath, err := findvboxmanage()
 	if err != nil {
-		result.status = err.Error()
-		return nil, err
+		result.status = "Error:" + err.Error()
+		return result, err
 	}
 	result.vboxmanagepath = vbmpath
 
 	// test VBoxManage version
 	vbmversion, err := runwithresults(vbmpath, "--version")
 	if err != nil {
-		result.status = err.Error()
-		return nil, err
+		result.status = "Error:" + err.Error()
+		return result, err
 	}
 	var majorversion int
 	_, err = fmt.Sscanf(vbmversion, "%d", &majorversion)
 	if err != nil || majorversion < 6 {
 		err = fmt.Errorf("unsupported VBoxManage version %v. 6.0 and above are supported", vbmversion)
-		result.status = err.Error()
-		return nil, err
+		result.status = "Error:" + err.Error()
+		return result, err
 	}
 
 	result.status = "Ready"

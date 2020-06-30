@@ -14,4 +14,5 @@ var (
 	errNodeCannotStart         = errors.New("cannot start node")
 	errNodeCannotStop          = errors.New("node not started. Cannot stop node")
 	errPortForwardNotSupported = errors.New("port forwarding not supported")
+	errPortAlreadyUsed         = errors.New("port already used")
 )
