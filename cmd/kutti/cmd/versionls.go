@@ -47,9 +47,10 @@ func versionls(cmd *cobra.Command, args []string) {
 		return
 	}
 
-	kuttilog.Printf(2, "Available versions for driver:%s", driver.Name())
+	kuttilog.Printf(2, "Versions for driver %s:\n", driver.Name())
+	fmt.Println("VERSION  STATUS")
 	driver.ForEachVersion(func(v *clustermanager.Version) bool {
-		fmt.Printf("%s : %s\n", v.K8sversion(), v.Status())
+		fmt.Printf("%7.7s  %s\n", v.K8sversion(), v.Status())
 		return false
 	})
 }

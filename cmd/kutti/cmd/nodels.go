@@ -32,7 +32,7 @@ func nodels(cmd *cobra.Command, args []string) {
 		kuttilog.Printf(0, "Error: %v", err)
 		return
 	}
-
+	kuttilog.Printf(2, "Nodes for cluster %s:\n", cluster.Name)
 	fmt.Printf("%-12.12s  %-10.10s  %s\n", "NAME", "TYPE", "STATUS")
 	for _, node := range cluster.Nodes {
 		status := node.Status()

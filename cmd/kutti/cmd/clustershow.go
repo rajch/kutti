@@ -25,7 +25,7 @@ import (
 
 // clustershowCmd represents the clustershow command
 var clustershowCmd = &cobra.Command{
-	Use:           "show",
+	Use:           "show CLUSTERNAME",
 	Aliases:       []string{"describe", "inspect", "get"},
 	Short:         "Show cluster details",
 	Long:          `Show cluster details.`,
