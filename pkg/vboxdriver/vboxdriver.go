@@ -277,6 +277,7 @@ func (vd *VBoxVMDriver) ListHosts() ([]core.VMHost, error) {
 // setting the VM name. The second connects the first network interface card to
 // the NAT network.
 func (vd *VBoxVMDriver) CreateHost(hostname string, networkname string, clustername string, k8sversion string) (core.VMHost, error) {
+	kuttilog.Println(2, "Importing image...")
 
 	ovafile, err := imagepathfromk8sversion(k8sversion)
 	if err != nil {
@@ -306,6 +307,7 @@ func (vd *VBoxVMDriver) CreateHost(hostname string, networkname string, clustern
 	}
 
 	// Attach newly created VM to NAT Network
+	kuttilog.Println(2, "Attaching host to network...")
 	newhost := &VBoxVMHost{driver: vd, name: hostname, netname: networkname, clustername: clustername, status: "Created"}
 
 	_, err = runwithresults(
@@ -324,6 +326,7 @@ func (vd *VBoxVMDriver) CreateHost(hostname string, networkname string, clustern
 	}
 
 	// Start the host
+	kuttilog.Println(2, "Starting host...")
 	err = newhost.Start()
 	if err != nil {
 		return newhost, err
@@ -331,14 +334,22 @@ func (vd *VBoxVMDriver) CreateHost(hostname string, networkname string, clustern
 	newhost.WaitForStateChange(25)
 
 	// Change the name
-	err = newhost.renamehost(hostname)
+	for renameretries := 1; renameretries < 4; renameretries++ {
+		kuttilog.Printf(2, "Renaming host (attempt %v/3)...", renameretries)
+		err = newhost.renamehost(hostname)
+		if err == nil {
+			break
+		}
+	}
+
 	if err != nil {
 		return newhost, err
 	}
-
+	kuttilog.Println(2, "Host renamed.")
 	// Save the IP Address
 	newhost.setproperty(propSavedIPAddress, newhost.ipAddress())
 
+	kuttilog.Println(2, "Stopping host...")
 	newhost.Stop()
 	newhost.WaitForStateChange(25)
 
