@@ -1,7 +1,7 @@
 # Bump these on release, and for now update the deployment files
 VERSION_MAJOR ?= 0
 VERSION_MINOR ?= 1
-BUILD_NUMBER  ?= 12
+BUILD_NUMBER  ?= 13
 
 IMAGE_TAG ?= $(VERSION_MAJOR).$(VERSION_MINOR).$(BUILD_NUMBER)
 REGISTRY_USER ?= rajchaudhuri
@@ -34,7 +34,7 @@ KUTTICMDFILES = cmd/kutti/main.go \
 				internal/pkg/kuttilog/*.go
 
 out/kutti: $(KUTTICMDFILES)
-	CGO_ENABLED=0 go build -o $@ $<
+	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o $@ $<
 
 .PHONY: kutticmd
 kutticmd: out/kutti

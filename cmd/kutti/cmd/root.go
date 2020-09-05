@@ -15,7 +15,7 @@ var cfgFile string
 var rootCmd = &cobra.Command{
 	Use:              "kutti",
 	Short:            "Manage multi-node kubernetes clusters in a local environment",
-	Long:             "Manage multi-node kubernetes clusters in a local environment",
+	Long:             `Manage multi-node kubernetes clusters in a local environment.`,
 	PersistentPreRun: setverbosity,
 }
 

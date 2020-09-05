@@ -62,9 +62,9 @@ func (p *kuttiLocalProvisioner) Provision(options controller.ProvisionOptions) (
 			NodeAffinity: &v1.VolumeNodeAffinity{
 				Required: &v1.NodeSelector{
 					NodeSelectorTerms: []v1.NodeSelectorTerm{
-						v1.NodeSelectorTerm{
+						{
 							MatchExpressions: []v1.NodeSelectorRequirement{
-								v1.NodeSelectorRequirement{
+								{
 									Key:      "kubernetes.io/hostname",
 									Operator: "In",
 									Values:   []string{p.nodeName},
