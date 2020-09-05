@@ -24,10 +24,11 @@ import (
 
 // versioncleardefaultCmd represents the versioncleardefault command
 var versioncleardefaultCmd = &cobra.Command{
-	Use:   "cleardefault",
-	Short: "Clear default version",
-	Long:  `Clear default version.`,
-	Run:   versioncleardefault,
+	Use:     "cleardefault",
+	Aliases: []string{"unselect"},
+	Short:   "Clear default version",
+	Long:    `Clear default version.`,
+	Run:     versioncleardefault,
 }
 
 func init() {

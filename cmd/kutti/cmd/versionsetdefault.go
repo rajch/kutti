@@ -26,6 +26,7 @@ import (
 // versionsetdefaultCmd represents the versionsetdefault command
 var versionsetdefaultCmd = &cobra.Command{
 	Use:           "setdefault VERSION",
+	Aliases:       []string{"select"},
 	Short:         "Set default version",
 	Long:          `Set default version.`,
 	Run:           versionsetdefault,
