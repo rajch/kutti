@@ -10,7 +10,7 @@ import (
 // clusterrmCmd represents the clusterrm command
 var clusterrmCmd = &cobra.Command{
 	Use:           "rm CLUSTERNAME",
-	Aliases:       []string{"delete"},
+	Aliases:       []string{"delete", "remove"},
 	Short:         "Delete a cluster.",
 	Long:          `Delete a cluster.`,
 	Run:           clusterrm,

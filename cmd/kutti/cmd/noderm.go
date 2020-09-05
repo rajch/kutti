@@ -8,7 +8,7 @@ import (
 // nodermCmd represents the noderm command
 var nodermCmd = &cobra.Command{
 	Use:           "rm NODENAME",
-	Aliases:       []string{"delete"},
+	Aliases:       []string{"delete", "remove"},
 	Short:         "Delete a node",
 	Long:          `Delete a node.`,
 	Args:          nodenameonlyargs,

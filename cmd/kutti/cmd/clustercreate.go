@@ -71,15 +71,18 @@ func clustercreate(cmd *cobra.Command, args []string) {
 	unmanaged, _ := cmd.Flags().GetBool("unmanaged")
 	var err error
 
-	if unmanaged {
-		kuttilog.Printf(2, "Creating cluster '%s'...\n", clustername)
-		err = clustermanager.NewEmptyCluster(
-			clustername,
-			k8sversion,
-			driver,
-		)
-	} else {
-		err = errors.New("managed cluster creation not yet implemented")
+	err = clustermanager.ValidateClusterName(clustername)
+	if err == nil {
+		if unmanaged {
+			kuttilog.Printf(2, "Creating cluster '%s'...\n", clustername)
+			err = clustermanager.NewEmptyCluster(
+				clustername,
+				k8sversion,
+				driver,
+			)
+		} else {
+			err = errors.New("managed cluster creation not yet implemented")
+		}
 	}
 
 	if err != nil {

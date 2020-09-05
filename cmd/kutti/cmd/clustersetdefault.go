@@ -10,6 +10,7 @@ import (
 // clustersetdefaultCmd represents the clustersetdefault command
 var clustersetdefaultCmd = &cobra.Command{
 	Use:           "setdefault CLUSTERNAME",
+	Aliases:       []string{"select"},
 	Short:         "Sets the default cluster.",
 	Long:          `Sets the default cluster.`,
 	Args:          clusternameonlyargs,
