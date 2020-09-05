@@ -23,10 +23,28 @@ type Cluster struct {
 	status string
 }
 
+// ValidateNodeName checks for the validity of a node name.
+// It uses IsValidname to check name validity, and also checks if a node name
+// already exists in the cluster.
+func (c *Cluster) ValidateNodeName(name string) error {
+	if !IsValidName(name) {
+		return errInvalidName
+	}
+
+	// Check if name exists
+	_, ok := c.Nodes[name]
+	if ok {
+		return errNodeExists
+	}
+
+	return nil
+}
+
 // NewUninitializedNode adds a node, but does not join it to a kubernetes cluster
 func (c *Cluster) NewUninitializedNode(nodename string) (*Node, error) {
-	if !IsValidName(nodename) {
-		return nil, errInvalidName
+	err := c.ValidateNodeName(nodename)
+	if err != nil {
+		return nil, err
 	}
 
 	return c.addnode(nodename, "Unmanaged")

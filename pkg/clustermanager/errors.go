@@ -9,6 +9,7 @@ var (
 	errClusterNotEmpty         = errors.New("cluster is not empty")
 	errDriverDoesNotExist      = errors.New("driver does not exist")
 	errImageNotAvailable       = errors.New("image not available")
+	errNodeExists              = errors.New("node already exists")
 	errNodeNotFound            = errors.New("node not found")
 	errNodeIsRunning           = errors.New("node is running")
 	errNodeCannotStart         = errors.New("cannot start node")

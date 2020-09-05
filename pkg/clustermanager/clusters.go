@@ -17,14 +17,9 @@ func ForEachCluster(f func(*Cluster) bool) {
 // NewEmptyCluster creates a new, empty cluster
 func NewEmptyCluster(name string, k8sversion string, drivername string) error {
 	// Validate name
-	if !IsValidName(name) {
-		return errInvalidName
-	}
-
-	// Check if name exists
-	_, ok := config.Clusters[name]
-	if ok {
-		return errClusterExists
+	err := ValidateClusterName(name)
+	if err != nil {
+		return err
 	}
 
 	// Validate driver
