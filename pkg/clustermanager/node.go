@@ -103,6 +103,11 @@ func (n *Node) ForceStop() error {
 
 // ForwardSSHPort forwards the node's SSH port
 func (n *Node) ForwardSSHPort(hostport int) error {
+	return n.ForwardPort(hostport, 22)
+}
+
+// ForwardPort forwards a port of the node to the specified host port
+func (n *Node) ForwardPort(hostport int, nodeport int) error {
 	err := n.Cluster().ensuredriver()
 	if err != nil {
 		return err
@@ -122,12 +127,52 @@ func (n *Node) ForwardSSHPort(hostport int) error {
 		return err
 	}
 
-	err = n.host.ForwardSSHPort(hostport)
+	_, ok := n.Ports[nodeport]
+	if ok {
+		return errPortAlreadyUsed
+	}
+
+	err = n.host.ForwardPort(hostport, nodeport)
 	if err != nil {
 		return err
 	}
 
-	n.Ports[22] = hostport
+	n.Ports[nodeport] = hostport
+	return clusterconfigmanager.Save()
+}
+
+// UnforwardPort removes any mapping of the specified node port
+func (n *Node) UnforwardPort(nodeport int) error {
+	cluster := n.Cluster()
+	err := cluster.ensuredriver()
+	if err != nil {
+		return err
+	}
+
+	if !cluster.driver.RequiresPortForwarding() {
+		return errPortForwardNotSupported
+	}
+
+	if nodeport == 22 {
+		return errPortCannotUnmap
+	}
+
+	_, ok := n.Ports[nodeport]
+	if !ok {
+		return errPortNotForwarded
+	}
+
+	err = n.ensurehost()
+	if err != nil {
+		return err
+	}
+
+	err = n.host.UnforwardPort(nodeport)
+	if err != nil {
+		return err
+	}
+
+	delete(n.Ports, nodeport)
 	return clusterconfigmanager.Save()
 }
 

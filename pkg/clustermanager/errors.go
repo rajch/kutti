@@ -16,4 +16,6 @@ var (
 	errNodeCannotStop          = errors.New("node not started. Cannot stop node")
 	errPortForwardNotSupported = errors.New("port forwarding not supported")
 	errPortAlreadyUsed         = errors.New("port already used")
+	errPortNotForwarded        = errors.New("port not forwarded")
+	errPortCannotUnmap         = errors.New("the SSH port cannot be unmapped")
 )

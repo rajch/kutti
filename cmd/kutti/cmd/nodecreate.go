@@ -72,7 +72,7 @@ func nodecreate(cmd *cobra.Command, args []string) {
 		if err != nil {
 			kuttilog.Printf(0, "Error: Could not forward SSH port: %v", err)
 			// Don't fail node creation
-			kuttilog.Printf(0, "Try manually mapping the SSH port.")
+			kuttilog.Printf(0, "Try manually mapping the SSH port, or delete and re-create this node.")
 		}
 	}
 

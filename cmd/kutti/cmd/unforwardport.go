@@ -23,24 +23,24 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// nodeshowCmd represents the nodeshow command
-var nodeshowCmd = &cobra.Command{
-	Use:           "show NODENAME",
-	Aliases:       []string{"describe", "inspect", "get"},
-	Short:         "Show node details",
-	Long:          `Show node details.`,
-	Run:           nodeshowCommand,
+// unforwardportCmd represents the unforwardport command
+var unforwardportCmd = &cobra.Command{
+	Use:           "unforwardport NODENAME",
+	Aliases:       []string{"unpublish", "unforward", "unmap"},
+	Short:         "Unforward a node port",
+	Long:          `Unforward a node port.`,
+	Run:           unforwardportCommand,
 	Args:          nodenameonlyargs,
 	SilenceErrors: true,
 }
 
 func init() {
-	nodeCmd.AddCommand(nodeshowCmd)
+	nodeCmd.AddCommand(unforwardportCmd)
 
-	nodeshowCmd.Flags().StringP("cluster", "c", "", "Cluster name")
+	unforwardportCmd.Flags().IntP("nodeport", "n", 0, "Node port to unmap")
 }
 
-func nodeshowCommand(cmd *cobra.Command, args []string) {
+func unforwardportCommand(cmd *cobra.Command, args []string) {
 	cluster, err := getCluster(cmd)
 	if err != nil {
 		kuttilog.Printf(0, "Error: %v", err)
@@ -50,24 +50,21 @@ func nodeshowCommand(cmd *cobra.Command, args []string) {
 	nodename := args[0]
 	node, ok := cluster.Nodes[nodename]
 	if !ok {
-		fmt.Printf("Error: Node '%s' does not exist.\n", nodename)
+		kuttilog.Printf(0, "Error: node '%v' not found.\n", nodename)
 		return
 	}
 
-	fmt.Printf(
-		"Name: %v\nType: %v\nPorts:\n",
-		node.Name,
-		node.Type,
-	)
-
-	for nodeport, hostport := range node.Ports {
-		fmt.Printf(
-			"  - NodePort: %v\n    HostPort: %v\n",
-			nodeport,
-			hostport,
-		)
+	nodeport, _ := cmd.Flags().GetInt("nodeport")
+	if nodeport == 0 {
+		fmt.Println("Error: Please provide a valid nodeport.")
+		return
 	}
 
-	fmt.Print("Status: ")
-	fmt.Printf("%v\n", node.Status())
+	err = node.UnforwardPort(nodeport)
+	if err != nil {
+		fmt.Printf("Error: Cannot unforward node port %v: %v.\n", nodeport, err)
+		return
+	}
+
+	fmt.Printf("Node port %v unforwarded.\n", nodeport)
 }

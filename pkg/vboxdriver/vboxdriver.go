@@ -347,7 +347,9 @@ func (vd *VBoxVMDriver) CreateHost(hostname string, networkname string, clustern
 	}
 	kuttilog.Println(2, "Host renamed.")
 	// Save the IP Address
-	newhost.setproperty(propSavedIPAddress, newhost.ipAddress())
+	ipaddress := newhost.ipAddress()
+	kuttilog.Printf(2, "Obtained IP address '%v'", ipaddress)
+	newhost.setproperty(propSavedIPAddress, ipaddress)
 
 	kuttilog.Println(2, "Stopping host...")
 	newhost.Stop()
