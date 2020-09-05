@@ -33,7 +33,7 @@ func getCluster(cmd *cobra.Command) (*clustermanager.Cluster, error) {
 
 	if clustername == "" {
 		return nil,
-			fmt.Errorf("no cluster specified and default cluster not set. Use --cluster, or select a default cluster using 'kutti cluster setdefault'")
+			errors.New("no cluster specified and default cluster not set. Use --cluster, or select a default cluster using 'kutti cluster setdefault'")
 	}
 
 	cluster, _ = clustermanager.GetCluster(clustername)

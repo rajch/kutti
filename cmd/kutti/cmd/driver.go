@@ -10,7 +10,7 @@ import (
 var driverCmd = &cobra.Command{
 	Use:   "driver",
 	Short: "View drivers",
-	Long:  `View drivers`,
+	Long:  `View drivers.`,
 }
 
 func init() {

@@ -8,8 +8,8 @@ import (
 // nodestartCmd represents the nodestart command
 var nodestartCmd = &cobra.Command{
 	Use:           "start NODENAME",
-	Short:         "Starts a node",
-	Long:          `Starts a node.`,
+	Short:         "Start a node",
+	Long:          `Start a node.`,
 	Args:          nodenameonlyargs,
 	Run:           nodestart,
 	SilenceErrors: true,
@@ -18,7 +18,7 @@ var nodestartCmd = &cobra.Command{
 func init() {
 	nodeCmd.AddCommand(nodestartCmd)
 
-	nodestartCmd.Flags().StringP("cluster", "c", "", "Cluster name")
+	nodestartCmd.Flags().StringP("cluster", "c", "", "cluster name")
 }
 
 func nodestart(cmd *cobra.Command, args []string) {

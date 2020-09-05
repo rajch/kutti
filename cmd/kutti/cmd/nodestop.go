@@ -8,8 +8,8 @@ import (
 // nodestopCmd represents the nodestop command
 var nodestopCmd = &cobra.Command{
 	Use:   "stop NODENAME",
-	Short: "Stops a node",
-	Long:  `Stops a node.`,
+	Short: "Stop a node",
+	Long:  `Stop a node.`,
 	Args:  nodenameonlyargs,
 	Run:   nodestop,
 }
@@ -17,7 +17,7 @@ var nodestopCmd = &cobra.Command{
 func init() {
 	nodeCmd.AddCommand(nodestopCmd)
 
-	nodestopCmd.Flags().StringP("cluster", "c", "", "Cluster name")
+	nodestopCmd.Flags().StringP("cluster", "c", "", "cluster name")
 }
 
 func nodestop(cmd *cobra.Command, args []string) {

@@ -29,8 +29,8 @@ func Execute() {
 }
 
 func init() {
-	rootCmd.PersistentFlags().BoolP("quiet", "q", false, "quiet output")
-	rootCmd.PersistentFlags().Bool("debug", false, "debug output")
+	rootCmd.PersistentFlags().BoolP("quiet", "q", false, "produce minimum output")
+	rootCmd.PersistentFlags().Bool("debug", false, "produce maximum output")
 }
 
 func setverbosity(cmd *cobra.Command, args []string) {

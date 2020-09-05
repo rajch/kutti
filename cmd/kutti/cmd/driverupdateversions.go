@@ -1,19 +1,3 @@
-/*
-Copyright © 2020 NAME HERE <EMAIL ADDRESS>
-
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-    http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-*/
-
 package cmd
 
 import (
@@ -27,8 +11,8 @@ import (
 var driverupdateversionsCmd = &cobra.Command{
 	Use:                   "updateversions DRIVERNAME",
 	Aliases:               []string{"updateversion", "update"},
-	Short:                 "Update available versions",
-	Long:                  `Update available versions.`,
+	Short:                 "Update supported Kubernetes versions",
+	Long:                  `Update supported Kubernetes versions.`,
 	Run:                   driverupdateversions,
 	Args:                  drivernameonlyargs,
 	DisableFlagsInUseLine: true,
@@ -39,7 +23,7 @@ var driverupdateversionsCmd = &cobra.Command{
 func init() {
 	driverCmd.AddCommand(driverupdateversionsCmd)
 
-	driverupdateversionsCmd.Flags().String("updateurl", "", "Update URL")
+	driverupdateversionsCmd.Flags().String("updateurl", "", "location of supported version data")
 }
 
 func driverupdateversions(cmd *cobra.Command, args []string) {

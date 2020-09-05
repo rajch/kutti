@@ -30,7 +30,7 @@ func init() {
 		"driver",
 		"d",
 		defaults.Getdefault("driver"),
-		"Cluster management driver",
+		"driver name",
 	)
 
 	clustercreateCmd.Flags().StringP(
@@ -44,7 +44,7 @@ func init() {
 		"unmanaged",
 		"u",
 		false,
-		"Create an unmanaged cluster with no nodes",
+		"create an unmanaged cluster with no nodes",
 	)
 }
 

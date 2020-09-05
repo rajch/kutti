@@ -10,8 +10,8 @@ import (
 var clustercleardefaultCmd = &cobra.Command{
 	Use:           "cleardefault",
 	Aliases:       []string{"unselect"},
-	Short:         "Clears the default cluster.",
-	Long:          `Clears the default cluster.`,
+	Short:         "Clear the default cluster",
+	Long:          `Clear the default cluster.`,
 	Args:          cobra.NoArgs,
 	Run:           clustercleardefault,
 	SilenceErrors: true,

@@ -23,7 +23,7 @@ var nodelsCmd = &cobra.Command{
 func init() {
 	nodeCmd.AddCommand(nodelsCmd)
 
-	nodelsCmd.Flags().StringP("cluster", "c", "", "Cluster name")
+	nodelsCmd.Flags().StringP("cluster", "c", "", "cluster name")
 }
 
 func nodels(cmd *cobra.Command, args []string) {

@@ -19,8 +19,8 @@ var nodermCmd = &cobra.Command{
 func init() {
 	nodeCmd.AddCommand(nodermCmd)
 
-	nodermCmd.Flags().StringP("cluster", "c", "", "Cluster name")
-	nodermCmd.Flags().BoolP("force", "f", false, "Forcibly delete running nodes.")
+	nodermCmd.Flags().StringP("cluster", "c", "", "cluster name")
+	nodermCmd.Flags().BoolP("force", "f", false, "forcibly delete running nodes.")
 }
 
 func noderm(cmd *cobra.Command, args []string) {
@@ -33,6 +33,7 @@ func noderm(cmd *cobra.Command, args []string) {
 	nodename := args[0]
 	forceflag, _ := cmd.Flags().GetBool("force")
 
+	kuttilog.Printf(2, "Deleting node %s...\n", nodename)
 	err = cluster.DeleteNode(nodename, forceflag)
 	if err != nil {
 		kuttilog.Printf(0, "Error: Could not delete node '%s': %v.", nodename, err)

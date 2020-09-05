@@ -21,8 +21,8 @@ var nodecreateCmd = &cobra.Command{
 func init() {
 	nodeCmd.AddCommand(nodecreateCmd)
 
-	nodecreateCmd.Flags().StringP("cluster", "c", "", "Cluster name")
-	nodecreateCmd.Flags().IntP("sshport", "p", 0, "Host port to forward SSH")
+	nodecreateCmd.Flags().StringP("cluster", "c", "", "cluster name")
+	nodecreateCmd.Flags().IntP("sshport", "p", 0, "host port to forward node SSH port")
 }
 
 func nodecreate(cmd *cobra.Command, args []string) {
@@ -37,7 +37,7 @@ func nodecreate(cmd *cobra.Command, args []string) {
 	nodename := args[0]
 	err = cluster.ValidateNodeName(nodename)
 	if err != nil {
-		kuttilog.Printf(0, "Error: Could not create node '%s' - %v", nodename, err)
+		kuttilog.Printf(0, "Error: Could not create node '%s': %v.", nodename, err)
 		return
 	}
 
@@ -53,7 +53,7 @@ func nodecreate(cmd *cobra.Command, args []string) {
 	if sshport != 0 {
 		err = cluster.CheckHostport(sshport)
 		if err != nil {
-			kuttilog.Printf(0, "Error: Cannot use host port %v - %v.", sshport, err)
+			kuttilog.Printf(0, "Error: Cannot use host port %v: %v.", sshport, err)
 			return
 		}
 	}
