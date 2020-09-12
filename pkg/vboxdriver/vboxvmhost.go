@@ -85,6 +85,11 @@ func (vh *VBoxVMHost) Stop() error {
 		return fmt.Errorf("Could not stop the host '%s': %v", vh.name, err)
 	}
 
+	// Big risk. Deleteing the LoggedInUser property that is used
+	// to check running status. Should be ok, because starting a
+	// VM host is supposed to recreate that property.
+	vh.unsetproperty(propLoggedInUsers)
+
 	vh.status = "Stopped"
 	return nil
 }
@@ -104,6 +109,11 @@ func (vh *VBoxVMHost) ForceStop() error {
 		return fmt.Errorf("Could not force stop the host '%s': %v", vh.name, err)
 	}
 
+	// Big risk. Deleteing the LoggedInUser property that is used
+	// to check running status. Should be ok, because starting a
+	// VM host is supposed to recreate that property.
+	vh.unsetproperty(propLoggedInUsers)
+
 	vh.status = "Stopped"
 	return nil
 }
@@ -112,8 +122,8 @@ func (vh *VBoxVMHost) ForceStop() error {
 // or until the VM host status changes from Stopped to Running or vice versa.
 // It does this by running the command:
 //   VBoxManage guestproperty wait <hostname> /VirtualBox/GuestInfo/OS/LoggedInUsers --timeout <milliseconds> --fail-on-timeout
-// WaitForStateChange should be called after a call to Start or Stop, before
-// any other operation.
+// WaitForStateChange should be called after a call to Start, before
+// any other operation. From observation, it should not be called before Stop.
 func (vh *VBoxVMHost) WaitForStateChange(timeoutinseconds int) {
 	_, _ = runwithresults(
 		vh.driver.vboxmanagepath,
@@ -268,6 +278,27 @@ func (vh *VBoxVMHost) setproperty(propname string, value string) error {
 	if err != nil {
 		return fmt.Errorf(
 			"Could not set property %s for host %s: %v",
+			propname,
+			vh.name,
+			err,
+		)
+	}
+
+	return nil
+}
+
+func (vh *VBoxVMHost) unsetproperty(propname string) error {
+	_, err := runwithresults(
+		vh.driver.vboxmanagepath,
+		"guestproperty",
+		"unset",
+		vh.qname(),
+		propname,
+	)
+
+	if err != nil {
+		return fmt.Errorf(
+			"Could not unset property %s for host %s: %v",
 			propname,
 			vh.name,
 			err,

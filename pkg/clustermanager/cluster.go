@@ -72,9 +72,14 @@ func (c *Cluster) DeleteNode(nodename string, force bool) error {
 		kuttilog.Printf(2, "Stopping node %s...", nodename)
 		err := n.ForceStop()
 		if err != nil {
-			return err
+			if !force {
+				return err
+			}
+
+			kuttilog.Printf(0, "Error stopping node: %v. Some VirtualBox artifacts may be left behind.")
+		} else {
+			kuttilog.Printf(2, "Node %s stopped.", nodename)
 		}
-		kuttilog.Printf(2, "Node %s stopped.", nodename)
 	}
 
 	// Unmap ports
@@ -82,7 +87,7 @@ func (c *Cluster) DeleteNode(nodename string, force bool) error {
 	for key := range n.Ports {
 		err := n.host.UnforwardPort(key)
 		if err != nil {
-			kuttilog.Printf(2, "Error while unmapping ports for node '%s': %v.", nodename, err)
+			kuttilog.Printf(0, "Error while unmapping ports for node '%s': %v.", nodename, err)
 		}
 	}
 	kuttilog.Println(2, "Ports unmapped.")
