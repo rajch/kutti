@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/rajch/kutti/cmd/kutti/defaults"
 	"github.com/rajch/kutti/internal/pkg/kuttilog"
 
 	"github.com/spf13/cobra"
@@ -45,4 +46,12 @@ func setverbosity(cmd *cobra.Command, args []string) {
 	}
 
 	kuttilog.SetPrefix("")
+}
+
+func defaultdecorate(value string, defaultname string) string {
+	if value == defaults.Getdefault(defaultname) {
+		return value + "*"
+	}
+
+	return value + " "
 }

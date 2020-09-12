@@ -3,6 +3,7 @@ package cmd
 import (
 	"fmt"
 
+	"github.com/rajch/kutti/cmd/kutti/defaults"
 	"github.com/rajch/kutti/internal/pkg/kuttilog"
 	"github.com/rajch/kutti/pkg/clustermanager"
 	"github.com/spf13/cobra"
@@ -14,27 +15,31 @@ var versionlsCmd = &cobra.Command{
 	Aliases:               []string{"list"},
 	Short:                 "List supported Kubernetes versions",
 	Long:                  `List supported Kubernetes versions.`,
-	Run:                   versionls,
+	Run:                   versionlsCommand,
 	DisableFlagsInUseLine: true,
 }
 
 func init() {
 	versionCmd.AddCommand(versionlsCmd)
 
-	versionlsCmd.Flags().StringP("driver", "d", "", "driver name")
+	versionlsCmd.Flags().StringP("driver", "d", defaults.Getdefault("driver"), "driver name")
 }
 
-func versionls(cmd *cobra.Command, args []string) {
+func versionlsCommand(cmd *cobra.Command, args []string) {
 	driver, err := getDriver(cmd)
 	if err != nil {
-		kuttilog.Printf(0, "Error: %v", err)
+		kuttilog.Printf(0, "Error: %v.", err)
 		return
 	}
 
 	kuttilog.Printf(2, "Versions for driver %s:\n", driver.Name())
-	fmt.Println("VERSION  LOCAL COPY")
+	fmt.Println("VERSION   LOCAL COPY")
 	driver.ForEachVersion(func(v *clustermanager.Version) bool {
-		fmt.Printf("%7.7s  %s\n", v.K8sversion(), v.Status())
+		fmt.Printf(
+			"%8.8s  %s\n",
+			defaultdecorate(v.K8sversion(), "version"),
+			v.Status(),
+		)
 		return false
 	})
 }

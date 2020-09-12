@@ -18,13 +18,14 @@ package main
 import (
 	"log"
 
-	"github.com/spf13/cobra"
-
 	"github.com/rajch/kutti/cmd/kutti/cmd"
 )
 
+var version string
+
 func main() {
-	cobra.EnableCommandSorting = false
+	//cobra.EnableCommandSorting = false
 	log.SetPrefix("kutti")
+	cmd.KuttiVersion = version
 	cmd.Execute()
 }

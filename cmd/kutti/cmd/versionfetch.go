@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"github.com/rajch/kutti/cmd/kutti/defaults"
 	"github.com/rajch/kutti/internal/pkg/kuttilog"
 
 	"github.com/spf13/cobra"
@@ -9,9 +10,9 @@ import (
 // versionfetchCmd represents the versionfetch command
 var versionfetchCmd = &cobra.Command{
 	Use:   "fetch VERSION",
-	Short: "Fetch local copy of a specified Kubernetes version image",
-	Long:  `Fetch local copy of a specified Kubernetes version image.`,
-	Run:   versionfetch,
+	Short: "Fetch local copy of a Kubernetes version image",
+	Long:  `Fetch local copy of a Kubernetes version image.`,
+	Run:   versionfetchCommand,
 	Args:  versiononlyargs,
 }
 
@@ -19,9 +20,10 @@ func init() {
 	versionCmd.AddCommand(versionfetchCmd)
 
 	versionfetchCmd.Flags().StringP("fromfile", "f", "", "fetch image from specified file path")
+	versionfetchCmd.Flags().StringP("driver", "d", defaults.Getdefault("driver"), "driver name")
 }
 
-func versionfetch(cmd *cobra.Command, args []string) {
+func versionfetchCommand(cmd *cobra.Command, args []string) {
 	driver, err := getDriver(cmd)
 	if err != nil {
 		kuttilog.Printf(0, "Error: %v", err)

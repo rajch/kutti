@@ -11,9 +11,10 @@ import (
 
 // versionCmd represents the version command
 var versionCmd = &cobra.Command{
-	Use:   "version",
-	Short: "Manage versions",
-	Long:  `Manage versions.`,
+	Use:     "k8sversion",
+	Aliases: []string{"k8s"},
+	Short:   "Manage Kubernetes versions",
+	Long:    `Manage Kubernetes versions.`,
 }
 
 func init() {

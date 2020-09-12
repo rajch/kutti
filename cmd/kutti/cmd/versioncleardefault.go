@@ -10,9 +10,9 @@ import (
 var versioncleardefaultCmd = &cobra.Command{
 	Use:     "cleardefault",
 	Aliases: []string{"unselect"},
-	Short:   "Clear default version",
-	Long:    `Clear default version.`,
-	Run:     versioncleardefault,
+	Short:   "Clear default Kubernetes version",
+	Long:    `Clear default Kubernetes version.`,
+	Run:     versioncleardefaultCommand,
 }
 
 func init() {
@@ -20,7 +20,7 @@ func init() {
 
 }
 
-func versioncleardefault(cmd *cobra.Command, args []string) {
+func versioncleardefaultCommand(cmd *cobra.Command, args []string) {
 	defaults.Setdefault("version", "")
-	kuttilog.Println(1, "Default version cleared.")
+	kuttilog.Println(1, "Default Kubernetes version cleared.")
 }

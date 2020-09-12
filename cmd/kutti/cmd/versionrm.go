@@ -12,7 +12,7 @@ var versionrmCmd = &cobra.Command{
 	Aliases:               []string{"delete", "remove"},
 	Short:                 "Remove local copy of a Kuberenetes version image",
 	Long:                  `Remove local copy of a Kuberenetes version image.`,
-	Run:                   versionrm,
+	Run:                   versionrmCommand,
 	Args:                  versiononlyargs,
 	DisableFlagsInUseLine: true,
 	SilenceErrors:         true,
@@ -21,12 +21,13 @@ var versionrmCmd = &cobra.Command{
 func init() {
 	versionCmd.AddCommand(versionrmCmd)
 
+	versionCmd.Flags().StringP("driver", "d", defaults.Getdefault("driver"), "driver name")
 }
 
-func versionrm(cmd *cobra.Command, args []string) {
+func versionrmCommand(cmd *cobra.Command, args []string) {
 	driver, err := getDriver(cmd)
 	if err != nil {
-		kuttilog.Printf(0, "Error: %v", err)
+		kuttilog.Printf(0, "Error: %v.", err)
 		return
 	}
 

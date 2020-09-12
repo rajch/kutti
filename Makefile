@@ -2,6 +2,9 @@
 VERSION_MAJOR ?= 0
 VERSION_MINOR ?= 1
 BUILD_NUMBER  ?= 13
+PATCH_NUMBER  ?= -beta1
+
+VERSION_STRING = $(VERSION_MAJOR).$(VERSION_MINOR).$(BUILD_NUMBER)$(PATCH_NUMBER)
 
 IMAGE_TAG ?= $(VERSION_MAJOR).$(VERSION_MINOR).$(BUILD_NUMBER)
 REGISTRY_USER ?= rajchaudhuri
@@ -34,13 +37,13 @@ KUTTICMDFILES = cmd/kutti/main.go \
 				internal/pkg/kuttilog/*.go
 
 out/kutti: $(KUTTICMDFILES)
-	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o $@ $<
+	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o $@ -ldflags "-X main.version=${VERSION_STRING}" $<
 
 .PHONY: kutticmd
 kutticmd: out/kutti
 
 out/kutti.exe: $(KUTTICMDFILES)
-	CGO_ENABLED=0 GOOS=windows GOARCH=amd64 go build -o $@ $<
+	CGO_ENABLED=0 GOOS=windows GOARCH=amd64 go build -o $@ -ldflags "-X main.version=${VERSION_STRING}" $<
 
 .PHONY: kutticmd-windows
 kutticmd-windows: out/kutti.exe
@@ -52,7 +55,7 @@ out/kutti-windows-installer.exe: build/package/kutti-windows-installer/kutti-win
 kutticmd-windows-installer: out/kutti-windows-installer.exe
 
 out/kutti-mac: $(KUTTICMDFILES)
-	CGO_ENABLED=0 GOOS=darwin GOARCH=amd64 go build -o $@ $<
+	CGO_ENABLED=0 GOOS=darwin GOARCH=amd64 go build -o $@ -ldflags "-X main.version=${VERSION_STRING}" $<
 
 .PHONY: kutticmd-mac
 kutticmd-mac: out/kutti-mac
