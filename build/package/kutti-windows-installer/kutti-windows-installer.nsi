@@ -1,5 +1,6 @@
 Name "Kutti Installer"
 OutFile "out/kutti-windows-installer.exe"
+Unicode True
 
 RequestExecutionLevel user
 InstallDir "$LOCALAPPDATA\Programs\kutti"
