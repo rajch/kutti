@@ -1,8 +1,7 @@
 package cmd
 
 import (
-	"fmt"
-
+	"github.com/rajch/kutti/internal/pkg/kuttilog"
 	"github.com/spf13/cobra"
 )
 
@@ -22,5 +21,5 @@ func init() {
 }
 
 func showversionCommand(cmd *cobra.Command, args []string) {
-	fmt.Printf("kutti version %s\n", KuttiVersion)
+	kuttilog.Printf(0, "kutti version %s\n", KuttiVersion)
 }
