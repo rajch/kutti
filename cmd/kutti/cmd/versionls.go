@@ -1,8 +1,6 @@
 package cmd
 
 import (
-	"fmt"
-
 	"github.com/rajch/kutti/cmd/kutti/defaults"
 	"github.com/rajch/kutti/internal/pkg/kuttilog"
 	"github.com/rajch/kutti/pkg/clustermanager"
@@ -32,10 +30,11 @@ func versionlsCommand(cmd *cobra.Command, args []string) {
 		return
 	}
 
-	kuttilog.Printf(2, "Versions for driver %s:\n", driver.Name())
-	fmt.Println("VERSION   LOCAL COPY")
+	kuttilog.Printf(0, "Versions for driver %s:\n", driver.Name())
+	kuttilog.Println(0, "VERSION   LOCAL COPY")
 	driver.ForEachVersion(func(v *clustermanager.Version) bool {
-		fmt.Printf(
+		kuttilog.Printf(
+			0,
 			"%8.8s  %s\n",
 			defaultdecorate(v.K8sversion(), "version"),
 			v.Status(),
