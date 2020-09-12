@@ -23,7 +23,7 @@ func init() {
 func nodestop(cmd *cobra.Command, args []string) {
 	cluster, err := getCluster(cmd)
 	if err != nil {
-		kuttilog.Printf(0, "Error: %v", err)
+		kuttilog.Printf(0, "Error: %v.", err)
 		return
 	}
 
@@ -36,7 +36,7 @@ func nodestop(cmd *cobra.Command, args []string) {
 
 	err = node.Stop()
 	if err != nil {
-		kuttilog.Printf(0, "Error: %v", err)
+		kuttilog.Printf(0, "Error: %v.", err)
 		return
 	}
 

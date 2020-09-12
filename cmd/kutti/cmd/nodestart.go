@@ -35,6 +35,7 @@ func nodestart(cmd *cobra.Command, args []string) {
 		return
 	}
 
+	kuttilog.Printf(2, "Starting node %s...", nodename)
 	err = node.Start()
 	if err != nil {
 		kuttilog.Printf(0, "Error: %v", err)
