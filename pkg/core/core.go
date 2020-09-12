@@ -7,6 +7,7 @@ var (
 // SSHClient defines a simple SSH client
 type SSHClient interface {
 	RunWithResults(address string, command string) (string, error)
+	RunInterativeShell(address string)
 }
 
 func ensuredrivers() {
