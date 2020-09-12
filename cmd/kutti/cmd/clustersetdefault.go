@@ -14,7 +14,7 @@ var clustersetdefaultCmd = &cobra.Command{
 	Short:         "Set the default cluster",
 	Long:          `Set the default cluster.`,
 	Args:          clusternameonlyargs,
-	Run:           clustersetdefault,
+	Run:           clustersetdefaultCommand,
 	SilenceErrors: true,
 }
 
@@ -22,7 +22,7 @@ func init() {
 	clusterCmd.AddCommand(clustersetdefaultCmd)
 }
 
-func clustersetdefault(cmd *cobra.Command, args []string) {
+func clustersetdefaultCommand(cmd *cobra.Command, args []string) {
 	clustername := args[0]
 	_, ok := clustermanager.GetCluster(clustername)
 	if !ok {

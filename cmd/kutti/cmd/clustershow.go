@@ -1,8 +1,7 @@
 package cmd
 
 import (
-	"fmt"
-
+	"github.com/rajch/kutti/internal/pkg/kuttilog"
 	"github.com/rajch/kutti/pkg/clustermanager"
 	"github.com/spf13/cobra"
 )
@@ -26,11 +25,12 @@ func clustershowCommand(cmd *cobra.Command, args []string) {
 	clustername := args[0]
 	cluster, ok := clustermanager.GetCluster(clustername)
 	if !ok {
-		fmt.Printf("Error: Cluster '%s' does not exist.\n", clustername)
+		kuttilog.Printf(0, "Error: Cluster '%s' does not exist.\n", clustername)
 		return
 	}
 
-	fmt.Printf(
+	kuttilog.Printf(
+		0,
 		"Name: %v\nType: %v\nK8sVersion: %v\nDriver: %v\nNodes:\n",
 		cluster.Name,
 		cluster.Type,
@@ -38,6 +38,6 @@ func clustershowCommand(cmd *cobra.Command, args []string) {
 		cluster.DriverName,
 	)
 	for nodename, node := range cluster.Nodes {
-		fmt.Printf("  - %v:\n      SSHPort: %v\n", nodename, node.Ports[22])
+		kuttilog.Printf(0, "  - %v:\n      SSHPort: %v\n", nodename, node.Ports[22])
 	}
 }
