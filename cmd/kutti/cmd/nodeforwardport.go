@@ -4,13 +4,14 @@ import (
 	"fmt"
 
 	"github.com/rajch/kutti/internal/pkg/kuttilog"
+	"github.com/rajch/kutti/pkg/clustermanager"
 	"github.com/spf13/cobra"
 )
 
 // nodeforwardportCmd represents the forwardport command
 var nodeforwardportCmd = &cobra.Command{
 	Use:           "forwardport NODENAME",
-	Aliases:       []string{"publish", "forward", "map"},
+	Aliases:       []string{"publish", "forward", "portforward", "map"},
 	Short:         "Forward a node port to a host port",
 	Long:          `Forward a node port to a host port.`,
 	Run:           nodeforwardportCommand,
@@ -28,7 +29,7 @@ func init() {
 func nodeforwardportCommand(cmd *cobra.Command, args []string) {
 	cluster, err := getCluster(cmd)
 	if err != nil {
-		kuttilog.Printf(0, "Error: %v", err)
+		kuttilog.Printf(0, "Error: %v.", err)
 		return
 	}
 
@@ -40,14 +41,14 @@ func nodeforwardportCommand(cmd *cobra.Command, args []string) {
 	}
 
 	nodeport, _ := cmd.Flags().GetInt("nodeport")
-	if nodeport == 0 {
-		fmt.Println("Error: Please provide a valid nodeport.")
+	if !clustermanager.IsValidPort(nodeport) {
+		fmt.Println("Error: Please provide a valid nodeport. Valid ports are between 1 and 65535.")
 		return
 	}
 
 	hostport, _ := cmd.Flags().GetInt("hostport")
-	if hostport == 0 {
-		fmt.Println("Error: Please provide a valid hostport.")
+	if !clustermanager.IsValidPort(hostport) {
+		fmt.Println("Error: Please provide a valid hostport. Valid ports are between 1 and 65535.")
 		return
 	}
 
@@ -60,7 +61,7 @@ func nodeforwardportCommand(cmd *cobra.Command, args []string) {
 	err = node.ForwardPort(hostport, nodeport)
 	if err != nil {
 		fmt.Printf(
-			"Error: Could not forward node port %v to host port %v: %v\n",
+			"Error: Could not forward node port %v to host port %v: %v.\n",
 			nodeport,
 			hostport,
 			err,

@@ -117,6 +117,14 @@ func (n *Node) ForwardPort(hostport int, nodeport int) error {
 		return errPortForwardNotSupported
 	}
 
+	if !IsValidPort(nodeport) {
+		return errPortNodePortInvalid
+	}
+
+	if !IsValidPort(hostport) {
+		return errPortHostPortInvalid
+	}
+
 	err = n.ensurehost()
 	if err != nil {
 		return err
@@ -129,7 +137,7 @@ func (n *Node) ForwardPort(hostport int, nodeport int) error {
 
 	_, ok := n.Ports[nodeport]
 	if ok {
-		return errPortAlreadyUsed
+		return errPortNodePortInUse
 	}
 
 	err = n.host.ForwardPort(hostport, nodeport)
@@ -151,6 +159,10 @@ func (n *Node) UnforwardPort(nodeport int) error {
 
 	if !cluster.driver.RequiresPortForwarding() {
 		return errPortForwardNotSupported
+	}
+
+	if !IsValidPort(nodeport) {
+		return errPortNodePortInvalid
 	}
 
 	if nodeport == 22 {

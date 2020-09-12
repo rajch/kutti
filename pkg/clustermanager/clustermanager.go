@@ -11,6 +11,11 @@ func IsValidName(name string) bool {
 	return matched
 }
 
+// IsValidPort checks for the validity of a port number.
+func IsValidPort(portnumber int) bool {
+	return portnumber > 0 && portnumber < 65536
+}
+
 // ValidateClusterName checks for the validity of a cluster name.
 // It uses IsValidname to check name validity, and also checks if a cluster name
 // already exists.

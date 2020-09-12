@@ -100,7 +100,7 @@ func (c *Cluster) CheckHostport(hostport int) error {
 	for _, nodevalue := range c.Nodes {
 		for _, hostportvalue := range nodevalue.Ports {
 			if hostportvalue == hostport {
-				return errPortAlreadyUsed
+				return errPortHostPortAlreadyUsed
 			}
 		}
 	}
