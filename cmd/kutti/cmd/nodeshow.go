@@ -1,8 +1,7 @@
 package cmd
 
 import (
-	"fmt"
-
+	"github.com/rajch/kutti/cmd/kutti/defaults"
 	"github.com/rajch/kutti/internal/pkg/kuttilog"
 	"github.com/spf13/cobra"
 )
@@ -21,37 +20,38 @@ var nodeshowCmd = &cobra.Command{
 func init() {
 	nodeCmd.AddCommand(nodeshowCmd)
 
-	nodeshowCmd.Flags().StringP("cluster", "c", "", "cluster name")
+	nodeshowCmd.Flags().StringP("cluster", "c", defaults.Getdefault("cluster"), "cluster name")
 }
 
 func nodeshowCommand(cmd *cobra.Command, args []string) {
 	cluster, err := getCluster(cmd)
 	if err != nil {
-		kuttilog.Printf(0, "Error: %v", err)
+		kuttilog.Printf(0, "Error: %v.", err)
 		return
 	}
 
 	nodename := args[0]
 	node, ok := cluster.Nodes[nodename]
 	if !ok {
-		fmt.Printf("Error: Node '%s' does not exist.\n", nodename)
+		kuttilog.Printf(0, "Error: Node '%s' does not exist.\n", nodename)
 		return
 	}
 
-	fmt.Printf(
+	kuttilog.Printf(
+		0,
 		"Name: %v\nType: %v\nPorts:\n",
 		node.Name,
 		node.Type,
 	)
 
 	for nodeport, hostport := range node.Ports {
-		fmt.Printf(
+		kuttilog.Printf(
+			0,
 			"  - NodePort: %v\n    HostPort: %v\n",
 			nodeport,
 			hostport,
 		)
 	}
 
-	fmt.Print("Status: ")
-	fmt.Printf("%v\n", node.Status())
+	kuttilog.Printf(0, "Status: %v\n", node.Status())
 }

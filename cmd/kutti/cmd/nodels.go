@@ -1,8 +1,7 @@
 package cmd
 
 import (
-	"fmt"
-
+	"github.com/rajch/kutti/cmd/kutti/defaults"
 	"github.com/rajch/kutti/internal/pkg/kuttilog"
 
 	"github.com/spf13/cobra"
@@ -14,7 +13,7 @@ var nodelsCmd = &cobra.Command{
 	Aliases:               []string{"list"},
 	Short:                 "List nodes",
 	Long:                  `List nodes.`,
-	Run:                   nodels,
+	Run:                   nodelsCommand,
 	SilenceUsage:          true,
 	SilenceErrors:         true,
 	DisableFlagsInUseLine: true,
@@ -23,20 +22,20 @@ var nodelsCmd = &cobra.Command{
 func init() {
 	nodeCmd.AddCommand(nodelsCmd)
 
-	nodelsCmd.Flags().StringP("cluster", "c", "", "cluster name")
+	nodelsCmd.Flags().StringP("cluster", "c", defaults.Getdefault("cluster"), "cluster name")
 }
 
-func nodels(cmd *cobra.Command, args []string) {
+func nodelsCommand(cmd *cobra.Command, args []string) {
 	cluster, err := getCluster(cmd)
 	if err != nil {
 		kuttilog.Printf(0, "Error: %v", err)
 		return
 	}
-	kuttilog.Printf(2, "Nodes for cluster %s:\n", cluster.Name)
-	fmt.Printf("%-12.12s  %-10.10s  %s\n", "NAME", "TYPE", "STATUS")
+	kuttilog.Printf(0, "Nodes for cluster %s:\n", cluster.Name)
+	kuttilog.Printf(0, "%-12.12s  %-10.10s  %s\n", "NAME", "TYPE", "STATUS")
 	for _, node := range cluster.Nodes {
 		status := node.Status()
-		fmt.Printf("%-12.12s  %-10.10s  %s\n", node.Name, node.Type, status)
+		kuttilog.Printf(0, "%-12.12s  %-10.10s  %s\n", node.Name, node.Type, status)
 	}
 
 }

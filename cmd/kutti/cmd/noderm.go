@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"github.com/rajch/kutti/cmd/kutti/defaults"
 	"github.com/rajch/kutti/internal/pkg/kuttilog"
 	"github.com/spf13/cobra"
 )
@@ -12,21 +13,21 @@ var nodermCmd = &cobra.Command{
 	Short:         "Delete a node",
 	Long:          `Delete a node.`,
 	Args:          nodenameonlyargs,
-	Run:           noderm,
+	Run:           nodermCommand,
 	SilenceErrors: true,
 }
 
 func init() {
 	nodeCmd.AddCommand(nodermCmd)
 
-	nodermCmd.Flags().StringP("cluster", "c", "", "cluster name")
+	nodermCmd.Flags().StringP("cluster", "c", defaults.Getdefault("cluster"), "cluster name")
 	nodermCmd.Flags().BoolP("force", "f", false, "forcibly delete running nodes.")
 }
 
-func noderm(cmd *cobra.Command, args []string) {
+func nodermCommand(cmd *cobra.Command, args []string) {
 	cluster, err := getCluster(cmd)
 	if err != nil {
-		kuttilog.Printf(0, "Error: %v", err)
+		kuttilog.Printf(0, "Error: %v.", err)
 		return
 	}
 

@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"github.com/rajch/kutti/cmd/kutti/defaults"
 	"github.com/rajch/kutti/internal/pkg/kuttilog"
 	"github.com/spf13/cobra"
 )
@@ -11,16 +12,16 @@ var nodestopCmd = &cobra.Command{
 	Short: "Stop a node",
 	Long:  `Stop a node.`,
 	Args:  nodenameonlyargs,
-	Run:   nodestop,
+	Run:   nodestopCommand,
 }
 
 func init() {
 	nodeCmd.AddCommand(nodestopCmd)
 
-	nodestopCmd.Flags().StringP("cluster", "c", "", "cluster name")
+	nodestopCmd.Flags().StringP("cluster", "c", defaults.Getdefault("cluster"), "cluster name")
 }
 
-func nodestop(cmd *cobra.Command, args []string) {
+func nodestopCommand(cmd *cobra.Command, args []string) {
 	cluster, err := getCluster(cmd)
 	if err != nil {
 		kuttilog.Printf(0, "Error: %v.", err)

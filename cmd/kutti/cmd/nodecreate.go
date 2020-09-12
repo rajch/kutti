@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"github.com/rajch/kutti/cmd/kutti/defaults"
 	"github.com/rajch/kutti/internal/pkg/kuttilog"
 	"github.com/rajch/kutti/pkg/clustermanager"
 
@@ -14,22 +15,22 @@ var nodecreateCmd = &cobra.Command{
 	Short:         "Create a node",
 	Long:          `Create a node.`,
 	Args:          nodenameonlyargs,
-	Run:           nodecreate,
+	Run:           nodecreateCommand,
 	SilenceErrors: true,
 }
 
 func init() {
 	nodeCmd.AddCommand(nodecreateCmd)
 
-	nodecreateCmd.Flags().StringP("cluster", "c", "", "cluster name")
+	nodecreateCmd.Flags().StringP("cluster", "c", defaults.Getdefault("cluster"), "cluster name")
 	nodecreateCmd.Flags().IntP("sshport", "p", 0, "host port to forward node SSH port")
 }
 
-func nodecreate(cmd *cobra.Command, args []string) {
+func nodecreateCommand(cmd *cobra.Command, args []string) {
 	// Get cluster to create node in
 	cluster, err := getCluster(cmd)
 	if err != nil {
-		kuttilog.Printf(0, "Error: %v", err)
+		kuttilog.Printf(0, "Error: %v.", err)
 		return
 	}
 
@@ -45,7 +46,7 @@ func nodecreate(cmd *cobra.Command, args []string) {
 	driver, _ := clustermanager.GetDriver(cluster.DriverName)
 	sshport, _ := cmd.Flags().GetInt("sshport")
 	if driver.RequiresPortForwarding() && sshport == 0 {
-		kuttilog.Printf(0, "Error: SSH forward port required for nodes in the '%s' cluster.", cluster.Name)
+		kuttilog.Printf(0, "Error: SSH port forwarding required for nodes in the '%s' cluster.", cluster.Name)
 		return
 	}
 
@@ -70,9 +71,9 @@ func nodecreate(cmd *cobra.Command, args []string) {
 	if driver.RequiresPortForwarding() && sshport != 0 {
 		err = newnode.ForwardSSHPort(sshport)
 		if err != nil {
-			kuttilog.Printf(0, "Error: Could not forward SSH port: %v", err)
+			kuttilog.Printf(0, "Warning: Could not forward SSH port: %v.", err)
 			// Don't fail node creation
-			kuttilog.Printf(0, "Try manually mapping the SSH port, or delete and re-create this node.")
+			kuttilog.Printf(0, "Warning: Try manually mapping the SSH port, or delete and re-create this node.")
 		}
 	}
 

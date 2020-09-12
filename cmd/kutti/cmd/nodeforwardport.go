@@ -1,8 +1,7 @@
 package cmd
 
 import (
-	"fmt"
-
+	"github.com/rajch/kutti/cmd/kutti/defaults"
 	"github.com/rajch/kutti/internal/pkg/kuttilog"
 	"github.com/rajch/kutti/pkg/clustermanager"
 	"github.com/spf13/cobra"
@@ -22,6 +21,7 @@ var nodeforwardportCmd = &cobra.Command{
 func init() {
 	nodeCmd.AddCommand(nodeforwardportCmd)
 
+	nodeforwardportCmd.Flags().StringP("cluster", "c", defaults.Getdefault("cluster"), "cluster name")
 	nodeforwardportCmd.Flags().IntP("hostport", "p", 0, "port on the host")
 	nodeforwardportCmd.Flags().IntP("nodeport", "n", 0, "port on the node")
 }
@@ -36,31 +36,32 @@ func nodeforwardportCommand(cmd *cobra.Command, args []string) {
 	nodename := args[0]
 	node, ok := cluster.Nodes[nodename]
 	if !ok {
-		kuttilog.Printf(0, "Error: node '%v' not found.\n", nodename)
+		kuttilog.Printf(0, "Error: node '%v' not found.", nodename)
 		return
 	}
 
 	nodeport, _ := cmd.Flags().GetInt("nodeport")
 	if !clustermanager.IsValidPort(nodeport) {
-		fmt.Println("Error: Please provide a valid nodeport. Valid ports are between 1 and 65535.")
+		kuttilog.Println(0, "Error: Please provide a valid nodeport. Valid ports are between 1 and 65535.")
 		return
 	}
 
 	hostport, _ := cmd.Flags().GetInt("hostport")
 	if !clustermanager.IsValidPort(hostport) {
-		fmt.Println("Error: Please provide a valid hostport. Valid ports are between 1 and 65535.")
+		kuttilog.Println(0, "Error: Please provide a valid hostport. Valid ports are between 1 and 65535.")
 		return
 	}
 
 	err = cluster.CheckHostport(hostport)
 	if err != nil {
-		fmt.Printf("Error: Cannot forward to host port %v: %v.\n", hostport, err)
+		kuttilog.Printf(0, "Error: Cannot forward to host port %v: %v.\n", hostport, err)
 		return
 	}
 
 	err = node.ForwardPort(hostport, nodeport)
 	if err != nil {
-		fmt.Printf(
+		kuttilog.Printf(
+			0,
 			"Error: Could not forward node port %v to host port %v: %v.\n",
 			nodeport,
 			hostport,
@@ -69,10 +70,14 @@ func nodeforwardportCommand(cmd *cobra.Command, args []string) {
 		return
 	}
 
-	kuttilog.Printf(
-		2,
-		"Forwarded node port %v to host port %v.\n",
-		nodeport,
-		hostport,
-	)
+	if kuttilog.V(1) {
+		kuttilog.Printf(
+			1,
+			"Forwarded node port %v to host port %v.\n",
+			nodeport,
+			hostport,
+		)
+	} else {
+		kuttilog.Println(0, hostport)
+	}
 }
