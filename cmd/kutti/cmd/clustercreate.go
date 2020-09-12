@@ -70,10 +70,25 @@ func clusternameonlyargs(cmd *cobra.Command, args []string) error {
 
 func clustercreateCommand(cmd *cobra.Command, args []string) {
 	clustername := args[0]
+
 	driver, _ := cmd.Flags().GetString("driver")
-	// TODO: Validate driver
+	_, ok := clustermanager.GetDriver(driver)
+	if !ok {
+		kuttilog.Printf(
+			0,
+			"Error: Driver '%s' not found. Cannot create cluster.",
+			driver,
+		)
+	}
+
 	k8sversion, _ := cmd.Flags().GetString("version")
-	// TODO: Validate version
+	if k8sversion == "" {
+		kuttilog.Println(
+			0,
+			"Error: Kubernetes version not specified, and no default set. Please use --version, or select a default version.",
+		)
+		return
+	}
 
 	unmanaged, _ := cmd.Flags().GetBool("unmanaged")
 	setdefault, _ := cmd.Flags().GetBool("select")

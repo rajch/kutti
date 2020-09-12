@@ -38,10 +38,16 @@ func versionsetdefaultCommand(cmd *cobra.Command, args []string) {
 		return
 	}
 
+	defaults.Setdefault("driver", driver.Name())
 	defaults.Setdefault("version", versionstring)
 
 	if kuttilog.V(1) {
-		kuttilog.Printf(1, "Default Kubernetes version set to %s.", versionstring)
+		kuttilog.Printf(
+			1,
+			"Default driver set to '%s'.\nDefault Kubernetes version set to %s.",
+			driver.Name(),
+			versionstring,
+		)
 	} else {
 		kuttilog.Println(0, versionstring)
 	}
