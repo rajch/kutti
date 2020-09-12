@@ -1,8 +1,7 @@
 package cmd
 
 import (
-	"fmt"
-
+	"github.com/rajch/kutti/internal/pkg/kuttilog"
 	"github.com/rajch/kutti/pkg/clustermanager"
 
 	"github.com/spf13/cobra"
@@ -23,9 +22,10 @@ func init() {
 }
 
 func driverlsCommand(cmd *cobra.Command, args []string) {
-	fmt.Printf("%-12.12s  %-40.40s  %s\n", "NAME", "DESCRIPTION", "STATUS")
+	kuttilog.Printf(0, "%-12.12s  %-40.40s  %s\n", "NAME", "DESCRIPTION", "STATUS")
 	clustermanager.ForEachDriver(func(driver *clustermanager.Driver) bool {
-		fmt.Printf(
+		kuttilog.Printf(
+			0,
 			"%-12.12s  %-40.40s  %s\n",
 			defaultdecorate(driver.Name(), "driver"),
 			driver.Description(),
