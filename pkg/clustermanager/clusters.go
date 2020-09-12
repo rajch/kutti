@@ -60,7 +60,7 @@ func GetCluster(name string) (*Cluster, bool) {
 
 // DeleteCluster deletes a cluster.
 // Currently, the cluster must be empty.
-func DeleteCluster(clustername string) error {
+func DeleteCluster(clustername string, force bool) error {
 	cluster, ok := GetCluster(clustername)
 	if !ok {
 		return errClusterDoesNotExist
@@ -74,8 +74,17 @@ func DeleteCluster(clustername string) error {
 	klog.Println(2, "Deleting network...")
 	err := cluster.deletenetwork()
 	if err != nil {
-		return err
+		if !force {
+			return err
+		}
+
+		klog.Printf(
+			0,
+			"Warning: Errors returned while deleting network: %v. Some artifacts may need manual cleanup.",
+			err,
+		)
 	}
+
 	klog.Println(2, "Network deleted.")
 
 	delete(config.Clusters, clustername)

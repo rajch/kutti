@@ -124,7 +124,7 @@ func TestDeleteNode(t *testing.T) {
 }
 
 func TestDeleteCluster(t *testing.T) {
-	err := clustermanager.DeleteCluster("testclust1")
+	err := clustermanager.DeleteCluster("testclust1", false)
 	if err != nil {
 		t.Logf("DeleteCluster failed with error:%v", err)
 		t.FailNow()

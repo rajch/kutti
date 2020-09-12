@@ -13,20 +13,23 @@ var clusterrmCmd = &cobra.Command{
 	Aliases:       []string{"delete", "remove"},
 	Short:         "Delete a cluster",
 	Long:          `Delete a cluster.`,
-	Run:           clusterrm,
+	Run:           clusterrmCommand,
 	Args:          clusternameonlyargs,
 	SilenceErrors: true,
 }
 
 func init() {
 	clusterCmd.AddCommand(clusterrmCmd)
+
+	clusterrmCmd.Flags().BoolP("force", "f", false, "forcibly delete cluster.")
 }
 
-func clusterrm(cmd *cobra.Command, args []string) {
+func clusterrmCommand(cmd *cobra.Command, args []string) {
 	clustername := args[0]
+	forceflag, _ := cmd.Flags().GetBool("force")
 
 	kuttilog.Printf(2, "Deleting cluster %s...\n", clustername)
-	err := clustermanager.DeleteCluster(clustername)
+	err := clustermanager.DeleteCluster(clustername, forceflag)
 	if err != nil {
 		kuttilog.Printf(0, "Error: Could not delete cluster %s: %v.\n", clustername, err)
 		return
