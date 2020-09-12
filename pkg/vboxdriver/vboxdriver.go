@@ -5,7 +5,9 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
+	"regexp"
 	"strings"
+	"time"
 
 	"github.com/rajch/kutti/internal/pkg/kuttilog"
 
@@ -27,6 +29,8 @@ var (
 	iphostbase        = 10
 	forwardedPortBase = 10000
 )
+
+var ipRegex, _ = regexp.Compile(`^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])$`)
 
 // VBoxVMDriver implements the VMDriver interface for VirtualBox.
 type VBoxVMDriver struct {
@@ -340,16 +344,35 @@ func (vd *VBoxVMDriver) CreateHost(hostname string, networkname string, clustern
 		if err == nil {
 			break
 		}
+		kuttilog.Printf(2, "Failed. Waiting %v seconds before retry...", renameretries*10)
+		time.Sleep(time.Duration(renameretries*10) * time.Second)
 	}
 
 	if err != nil {
 		return newhost, err
 	}
 	kuttilog.Println(2, "Host renamed.")
+
 	// Save the IP Address
-	ipaddress := newhost.ipAddress()
-	kuttilog.Printf(2, "Obtained IP address '%v'", ipaddress)
-	newhost.setproperty(propSavedIPAddress, ipaddress)
+	ipSet := false
+	for ipretries := 1; ipretries < 4; ipretries++ {
+		kuttilog.Printf(2, "Fetching IP address (attempt %v/3)...", ipretries)
+		ipaddress := newhost.ipAddress()
+
+		if ipRegex.MatchString(ipaddress) {
+			kuttilog.Printf(2, "Obtained IP address '%v'", ipaddress)
+			newhost.setproperty(propSavedIPAddress, ipaddress)
+			ipSet = true
+			break
+		}
+
+		kuttilog.Printf(2, "Failed. Waiting %v seconds before retry...", ipretries*10)
+		time.Sleep(time.Duration(ipretries*10) * time.Second)
+	}
+
+	if !ipSet {
+		kuttilog.Printf(0, "Error: Failed to get IP address. You may have to delete this node and recreate it manually.")
+	}
 
 	kuttilog.Println(2, "Stopping host...")
 	newhost.Stop()
