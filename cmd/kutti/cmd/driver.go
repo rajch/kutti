@@ -9,8 +9,8 @@ import (
 // driverCmd represents the driver command
 var driverCmd = &cobra.Command{
 	Use:   "driver",
-	Short: "View drivers",
-	Long:  `View drivers.`,
+	Short: "View and update drivers",
+	Long:  `View and update drivers.`,
 }
 
 func init() {

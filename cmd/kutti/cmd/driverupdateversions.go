@@ -13,7 +13,7 @@ var driverupdateversionsCmd = &cobra.Command{
 	Aliases:               []string{"updateversion", "update"},
 	Short:                 "Update supported Kubernetes versions",
 	Long:                  `Update supported Kubernetes versions.`,
-	Run:                   driverupdateversions,
+	Run:                   driverupdateversionsCommand,
 	Args:                  drivernameonlyargs,
 	DisableFlagsInUseLine: true,
 	SilenceErrors:         true,
@@ -26,7 +26,7 @@ func init() {
 	driverupdateversionsCmd.Flags().String("updateurl", "", "location of supported version data")
 }
 
-func driverupdateversions(cmd *cobra.Command, args []string) {
+func driverupdateversionsCommand(cmd *cobra.Command, args []string) {
 	drivername := args[0]
 	driver, ok := clustermanager.GetDriver(drivername)
 	if !ok {
