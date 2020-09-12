@@ -7,7 +7,7 @@ IMAGE_TAG ?= $(VERSION_MAJOR).$(VERSION_MINOR).$(BUILD_NUMBER)
 REGISTRY_USER ?= rajchaudhuri
 
 .PHONY: all
-all: kutticmd
+all: kutticmd kutticmd-windows-installer kutticmd-mac
 
 out/kutti-localprovisioner: cmd/kutti-localprovisioner/main.go
 	CGO_ENABLED=0 go build -o out/kutti-localprovisioner cmd/kutti-localprovisioner/main.go
