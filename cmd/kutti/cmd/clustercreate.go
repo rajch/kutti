@@ -19,7 +19,7 @@ var clustercreateCmd = &cobra.Command{
 	Short:         "Create a new cluster",
 	Long:          `Create a new cluster.`,
 	Args:          clusternameonlyargs,
-	Run:           clustercreate,
+	Run:           clustercreateCommand,
 	SilenceErrors: true,
 }
 
@@ -46,6 +46,13 @@ func init() {
 		false,
 		"create an unmanaged cluster with no nodes",
 	)
+
+	clustercreateCmd.Flags().BoolP(
+		"select",
+		"s",
+		false,
+		"set the new cluster as default",
+	)
 }
 
 func clusternameonlyargs(cmd *cobra.Command, args []string) error {
@@ -61,7 +68,7 @@ func clusternameonlyargs(cmd *cobra.Command, args []string) error {
 	return nil
 }
 
-func clustercreate(cmd *cobra.Command, args []string) {
+func clustercreateCommand(cmd *cobra.Command, args []string) {
 	clustername := args[0]
 	driver, _ := cmd.Flags().GetString("driver")
 	// TODO: Validate driver
@@ -69,6 +76,8 @@ func clustercreate(cmd *cobra.Command, args []string) {
 	// TODO: Validate version
 
 	unmanaged, _ := cmd.Flags().GetBool("unmanaged")
+	setdefault, _ := cmd.Flags().GetBool("select")
+
 	var err error
 
 	err = clustermanager.ValidateClusterName(clustername)
@@ -96,4 +105,8 @@ func clustercreate(cmd *cobra.Command, args []string) {
 		kuttilog.Print(0, clustername)
 	}
 
+	if setdefault {
+		defaults.Setdefault("cluster", clustername)
+		kuttilog.Printf(1, "Default cluster set to '%s'.", clustername)
+	}
 }
