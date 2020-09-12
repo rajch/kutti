@@ -1,9 +1,8 @@
 package cmd
 
 import (
-	"fmt"
-
 	"github.com/rajch/kutti/cmd/kutti/defaults"
+	"github.com/rajch/kutti/internal/pkg/kuttilog"
 	"github.com/spf13/cobra"
 )
 
@@ -21,7 +20,8 @@ func init() {
 }
 
 func defaultsCommand(cmd *cobra.Command, args []string) {
-	fmt.Printf(
+	kuttilog.Printf(
+		0,
 		"Driver: %v\nVersion: %v\nCluster: %v\n",
 		defaults.Getdefault("driver"),
 		defaults.Getdefault("version"),
