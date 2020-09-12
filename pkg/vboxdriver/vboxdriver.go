@@ -376,7 +376,7 @@ func (vd *VBoxVMDriver) CreateHost(hostname string, networkname string, clustern
 
 	kuttilog.Println(2, "Stopping host...")
 	newhost.Stop()
-	newhost.WaitForStateChange(25)
+	// newhost.WaitForStateChange(25)
 
 	newhost.status = "Stopped"
 
