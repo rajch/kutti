@@ -34,9 +34,7 @@ func (cc *clusterManagerConfig) Deserialize(data []byte) error {
 }
 
 func (cc *clusterManagerConfig) Setdefaults() {
-	cc = &clusterManagerConfig{
-		Clusters: make(map[string]*Cluster),
-	}
+	cc.Clusters = make(map[string]*Cluster)
 }
 
 func init() {

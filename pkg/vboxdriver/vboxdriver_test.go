@@ -31,7 +31,7 @@ func TestNew(t *testing.T) {
 
 	drv, err := New()
 	if err != nil {
-		t.Logf("Error occured: %v\n", err)
+		t.Logf("Error occurred: %v\n", err)
 		t.Fail()
 		return
 	}
@@ -58,7 +58,7 @@ func TestNew(t *testing.T) {
 func TestListNetworks(t *testing.T) {
 	drv, err := New()
 	if err != nil {
-		t.Logf("Error occured: %v\n", err)
+		t.Logf("Error occurred: %v\n", err)
 		t.Fail()
 		return
 	}
@@ -75,7 +75,7 @@ func TestListNetworks(t *testing.T) {
 func TestListHosts(t *testing.T) {
 	drv, err := New()
 	if err != nil {
-		t.Logf("Error occured: %v\n", err)
+		t.Logf("Error occurred: %v\n", err)
 		t.Fail()
 		return
 	}

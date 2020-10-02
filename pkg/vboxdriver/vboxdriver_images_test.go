@@ -33,11 +33,10 @@ func TestFetchImageList(t *testing.T) {
 	}()
 
 	vboxdriver.ImagesSourceURL = "http://localhost:8181/images.json"
-	vd, err := vboxdriver.New()
+	vd, _ := vboxdriver.New()
 
 	t.Log("Fetching image list...")
-	err = vd.FetchImageList()
-
+	err := vd.FetchImageList()
 	if err != nil {
 		t.Logf("FetchImageList failed with: %v", err)
 		t.FailNow()
