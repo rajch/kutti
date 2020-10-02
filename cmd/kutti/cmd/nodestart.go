@@ -36,6 +36,16 @@ func nodestartCommand(cmd *cobra.Command, args []string) {
 		return
 	}
 
+	if node.Status() == "Running" {
+		kuttilog.Printf(0, "Error: Node %s already running.", nodename)
+		return
+	}
+
+	if node.Status() == "Unknown" {
+		kuttilog.Printf(0, "Cannot start node %s: node status unknown.", nodename)
+		return
+	}
+
 	kuttilog.Printf(2, "Starting node %s...", nodename)
 	err = node.Start()
 	if err != nil {

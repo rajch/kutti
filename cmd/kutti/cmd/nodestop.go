@@ -35,6 +35,16 @@ func nodestopCommand(cmd *cobra.Command, args []string) {
 		return
 	}
 
+	if node.Status() == "Stopped" {
+		kuttilog.Printf(0, "Error: Node %s already stopped.", nodename)
+		return
+	}
+
+	if node.Status() == "Unknown" {
+		kuttilog.Printf(0, "Cannot stop node %s: node status unknown.", nodename)
+		return
+	}
+
 	err = node.Stop()
 	if err != nil {
 		kuttilog.Printf(0, "Error: %v.", err)
