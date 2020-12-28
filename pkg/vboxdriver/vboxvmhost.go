@@ -9,6 +9,8 @@ import (
 const (
 	propSSHAddress     = "/kutti/VMInfo/SSHAddress"
 	propIPAddress      = "/VirtualBox/GuestInfo/Net/0/V4/IP"
+	propIPAddress2     = "/VirtualBox/GuestInfo/Net/1/V4/IP"
+	propIPAddress3     = "/VirtualBox/GuestInfo/Net/2/V4/IP"
 	propLoggedInUsers  = "/VirtualBox/GuestInfo/OS/LoggedInUsers"
 	propSavedIPAddress = "/kutti/VMInfo/SavedIPAddress"
 

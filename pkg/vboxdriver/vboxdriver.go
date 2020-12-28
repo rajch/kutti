@@ -354,12 +354,36 @@ func (vd *VBoxVMDriver) CreateHost(hostname string, networkname string, clustern
 	kuttilog.Println(2, "Host renamed.")
 
 	// Save the IP Address
+	// The first IP address should be DHCP-assigned, and therefore start with
+	// ipNetAddr (192.168.125 by default). This may fail if we check too soon.
+	// In some cases, VirtualBox picks up other interfaces first. So, we check
+	// up to three interfaces for the correct IP address, and do this up to 3
+	// times.
 	ipSet := false
 	for ipretries := 1; ipretries < 4; ipretries++ {
 		kuttilog.Printf(2, "Fetching IP address (attempt %v/3)...", ipretries)
-		ipaddress := newhost.ipAddress()
 
-		if ipRegex.MatchString(ipaddress) {
+		var ipaddress string
+		ipprops := []string{propIPAddress, propIPAddress2, propIPAddress3}
+
+		for _, ipprop := range ipprops {
+			ipaddr, present := newhost.getproperty(ipprop)
+
+			if present {
+				ipaddr = trimpropend(ipaddr)
+				if ipRegex.MatchString(ipaddr) && strings.HasPrefix(ipaddr, ipNetAddr) {
+					ipaddress = ipaddr
+					break
+				}
+			}
+
+			if kuttilog.V(4) {
+				kuttilog.Printf(4, "value of property %v is %v, and present is %v.", ipprop, ipaddr, present)
+				kuttilog.Printf(4, "Regex match is %v, and prefix match is %v.", ipRegex.MatchString(ipaddr), strings.HasPrefix(ipaddr, ipNetAddr))
+			}
+		}
+
+		if ipaddress != "" {
 			kuttilog.Printf(2, "Obtained IP address '%v'", ipaddress)
 			newhost.setproperty(propSavedIPAddress, ipaddress)
 			ipSet = true
