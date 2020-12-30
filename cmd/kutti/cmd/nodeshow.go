@@ -53,5 +53,7 @@ func nodeshowCommand(cmd *cobra.Command, args []string) {
 		)
 	}
 
+	kuttilog.Printf(0, "IP: %v\n", node.IPAddress())
+
 	kuttilog.Printf(0, "Status: %v\n", node.Status())
 }

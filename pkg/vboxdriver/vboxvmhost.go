@@ -42,6 +42,12 @@ func (vh *VBoxVMHost) Status() string {
 	return vh.status
 }
 
+// IPAddress returns the saved IP address of the VM host.
+func (vh *VBoxVMHost) IPAddress() string {
+	result := vh.ipAddress()
+	return result
+}
+
 // SSHAddress returns the address and port number to SSH into this VM host.
 func (vh *VBoxVMHost) SSHAddress() string {
 	result := vh.sshAddress()

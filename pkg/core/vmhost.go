@@ -8,6 +8,7 @@ type VMHost interface {
 	Name() string
 	Status() string
 	SSHAddress() string
+	IPAddress() string
 
 	Start() error
 	Stop() error

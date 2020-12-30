@@ -18,13 +18,21 @@ type Node struct {
 
 // Cluster returns the cluster this node belongs to
 func (n *Node) Cluster() *Cluster {
-	//fmt.Printf("BEFORE: Node:%+v]\n", n)
 	if n.cluster == nil {
 		n.cluster = config.Clusters[n.ClusterName]
 		n.cluster.ensuredriver()
 	}
-	//fmt.Printf("AFTER: Node:%+v]\n", n)
 	return n.cluster
+}
+
+// IPAddress returns the saved IP address of this node
+func (n *Node) IPAddress() string {
+	err := n.ensurehost()
+	if err != nil {
+		return "Unknown"
+	}
+
+	return n.host.IPAddress()
 }
 
 // Status returns the current node status
