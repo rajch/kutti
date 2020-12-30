@@ -1,8 +1,8 @@
 # Bump these on release, and for now update the deployment files
 VERSION_MAJOR ?= 0
 VERSION_MINOR ?= 1
-BUILD_NUMBER  ?= 13
-PATCH_NUMBER  ?= -beta3
+BUILD_NUMBER  ?= 14
+PATCH_NUMBER  ?= 
 
 VERSION_STRING = $(VERSION_MAJOR).$(VERSION_MINOR).$(BUILD_NUMBER)$(PATCH_NUMBER)
 
